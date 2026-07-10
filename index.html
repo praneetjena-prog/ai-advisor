@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Advisor — Find the Perfect AI Model & Agent for Your Project</title>
+  <meta name="description" content="Discover the best AI models, agent frameworks, and implementation strategies for your specific project. Get personalized recommendations with error-free code templates.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== Navigation ===== -->
+  <nav id="main-nav">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">⚡ AI Advisor</a>
+      <ul class="nav-links">
+        <li><a href="#section-hero" class="nav-link active" data-section="hero">Home</a></li>
+        <li><a href="#section-advisor" class="nav-link" data-section="advisor">Advisor</a></li>
+        <li><a href="#section-database" class="nav-link" data-section="database">Database</a></li>
+        <li><a href="#section-playbooks" class="nav-link" data-section="playbooks">Playbooks</a></li>
+        <li><a href="#section-prompt-builder" class="nav-link" data-section="prompt-builder">Prompt Builder</a></li>
+      </ul>
+      <button class="nav-mobile-toggle btn-ghost" id="mobile-nav-toggle" aria-label="Toggle navigation">☰</button>
+    </div>
+  </nav>
+
+  <!-- ===== Hero Section ===== -->
+  <section id="section-hero" class="section section-hero">
+    <div class="hero-content">
+      <div class="hero-badge">🚀 AI-Powered Recommendations</div>
+      <h1 class="hero-title">Find the <span class="gradient-text">Perfect AI</span> for Your Project</h1>
+      <p class="hero-description">Stop guessing which AI model or agent to use. Get personalized recommendations, implementation playbooks, and error-free code templates — all in one place.</p>
+      <div class="hero-cta">
+        <button id="hero-start-btn" class="btn btn-primary btn-lg">🎯 Get Recommendations</button>
+        <a href="#section-database" class="btn btn-secondary btn-lg">📊 Explore Database</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-number">12+</span>
+          <span class="hero-stat-label">Models Compared</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-number">9+</span>
+          <span class="hero-stat-label">Agent Frameworks</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-number">5</span>
+          <span class="hero-stat-label">Implementation Playbooks</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+  </section>
+
+  <!-- ===== Advisor Section ===== -->
+  <section id="section-advisor" class="section section-advisor">
+    <h2 class="section-title"><span class="gradient-text">Smart Advisor</span> Wizard</h2>
+    <p class="section-subtitle">Answer 4 simple questions and get a personalized AI recommendation tailored to your project needs.</p>
+
+    <div id="wizard-container" class="wizard-container glass-card">
+      <!-- Wizard Header -->
+      <div class="wizard-header">
+        <span id="wizard-step-indicator" class="wizard-step-indicator">Step 1 of 4</span>
+        <button id="wizard-restart" class="btn btn-ghost btn-sm hidden" aria-label="Restart wizard">↺ Restart</button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="wizard-progress">
+        <div id="wizard-progress-fill" class="wizard-progress-fill" style="width: 25%"></div>
+      </div>
+
+      <!-- Step 1 — Task Domain -->
+      <div class="wizard-step active" data-step="1">
+        <h3 class="wizard-step-title">What type of project are you building?</h3>
+        <p class="wizard-step-description">Select the primary domain of your AI-powered project.</p>
+        <div class="wizard-options">
+          <button class="wizard-option" data-value="coding" aria-label="Coding and Development">
+            <span class="wizard-option-icon">💻</span>
+            <span class="wizard-option-title">Coding & Development</span>
+            <span class="wizard-option-desc">Build, debug, or refactor code autonomously</span>
+          </button>
+          <button class="wizard-option" data-value="research" aria-label="Research and Analysis">
+            <span class="wizard-option-icon">🔍</span>
+            <span class="wizard-option-title">Research & Analysis</span>
+            <span class="wizard-option-desc">Deep research, data gathering, report generation</span>
+          </button>
+          <button class="wizard-option" data-value="data-processing" aria-label="Data Processing">
+            <span class="wizard-option-icon">📊</span>
+            <span class="wizard-option-title">Data Processing</span>
+            <span class="wizard-option-desc">ETL pipelines, data transformation, analytics</span>
+          </button>
+          <button class="wizard-option" data-value="content-creation" aria-label="Content Creation">
+            <span class="wizard-option-icon">✍️</span>
+            <span class="wizard-option-title">Content Creation</span>
+            <span class="wizard-option-desc">Blogs, social media, marketing copy, documentation</span>
+          </button>
+          <button class="wizard-option" data-value="customer-support" aria-label="Customer Support">
+            <span class="wizard-option-icon">🎧</span>
+            <span class="wizard-option-title">Customer Support</span>
+            <span class="wizard-option-desc">Chatbots, ticket handling, FAQ automation</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2 — Complexity -->
+      <div class="wizard-step" data-step="2">
+        <h3 class="wizard-step-title">How complex is your project?</h3>
+        <p class="wizard-step-description">This helps us recommend the right level of AI capability.</p>
+        <div class="wizard-options">
+          <button class="wizard-option" data-value="simple" aria-label="Simple complexity">
+            <span class="wizard-option-icon">🟢</span>
+            <span class="wizard-option-title">Simple</span>
+            <span class="wizard-option-desc">Single task, straightforward input/output</span>
+          </button>
+          <button class="wizard-option" data-value="moderate" aria-label="Moderate complexity">
+            <span class="wizard-option-icon">🟡</span>
+            <span class="wizard-option-title">Moderate</span>
+            <span class="wizard-option-desc">Multiple steps, some tool integration needed</span>
+          </button>
+          <button class="wizard-option" data-value="complex" aria-label="Complex complexity">
+            <span class="wizard-option-icon">🔴</span>
+            <span class="wizard-option-title">Complex</span>
+            <span class="wizard-option-desc">Multi-step workflows, multiple tools, error recovery</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3 — Autonomy Level -->
+      <div class="wizard-step" data-step="3">
+        <h3 class="wizard-step-title">How autonomous should the AI be?</h3>
+        <p class="wizard-step-description">Choose between full autonomy, human oversight, or direct prompting.</p>
+        <div class="wizard-options">
+          <button class="wizard-option" data-value="autonomous-agent" aria-label="Fully Autonomous Agent">
+            <span class="wizard-option-icon">🤖</span>
+            <span class="wizard-option-title">Fully Autonomous Agent</span>
+            <span class="wizard-option-desc">AI plans, executes, and self-corrects independently</span>
+          </button>
+          <button class="wizard-option" data-value="human-in-loop" aria-label="Human in the Loop">
+            <span class="wizard-option-icon">🤝</span>
+            <span class="wizard-option-title">Human-in-the-Loop</span>
+            <span class="wizard-option-desc">AI proposes, human approves before execution</span>
+          </button>
+          <button class="wizard-option" data-value="single-llm" aria-label="Single LLM">
+            <span class="wizard-option-icon">💬</span>
+            <span class="wizard-option-title">Single LLM (No Agent)</span>
+            <span class="wizard-option-desc">Direct prompting without agent framework</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 4 — Budget -->
+      <div class="wizard-step" data-step="4">
+        <h3 class="wizard-step-title">What's your budget range?</h3>
+        <p class="wizard-step-description">This determines whether we recommend open-source, free-tier, or premium models.</p>
+        <div class="wizard-options">
+          <button class="wizard-option" data-value="free" aria-label="Free or Open Source">
+            <span class="wizard-option-icon">🆓</span>
+            <span class="wizard-option-title">Free / Open Source</span>
+            <span class="wizard-option-desc">Self-hosted models, free API tiers</span>
+          </button>
+          <button class="wizard-option" data-value="low" aria-label="Low budget">
+            <span class="wizard-option-icon">💰</span>
+            <span class="wizard-option-title">Low ($0-50/month)</span>
+            <span class="wizard-option-desc">Budget-friendly API usage</span>
+          </button>
+          <button class="wizard-option" data-value="medium" aria-label="Medium budget">
+            <span class="wizard-option-icon">💎</span>
+            <span class="wizard-option-title">Medium ($50-200/month)</span>
+            <span class="wizard-option-desc">Balanced cost and performance</span>
+          </button>
+          <button class="wizard-option" data-value="high" aria-label="High budget">
+            <span class="wizard-option-icon">🏆</span>
+            <span class="wizard-option-title">High ($200+/month)</span>
+            <span class="wizard-option-desc">Maximum capability, no cost constraints</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 5 — Results -->
+      <div class="wizard-step" data-step="5">
+        <div id="wizard-results" class="wizard-results"></div>
+      </div>
+
+      <!-- Wizard Navigation -->
+      <div class="wizard-nav">
+        <button id="wizard-prev" class="btn btn-secondary hidden" aria-label="Previous step">← Previous</button>
+        <button id="wizard-next" class="btn btn-primary" aria-label="Next step">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Database Section ===== -->
+  <section id="section-database" class="section section-database">
+    <h2 class="section-title"><span class="gradient-text">AI Model & Agent</span> Database</h2>
+    <p class="section-subtitle">Explore and compare the leading AI models and agent frameworks.</p>
+
+    <div class="db-controls">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="db-search" placeholder="Search models and agents..." class="pb-input" aria-label="Search models and agents">
+      </div>
+      <div class="db-filters">
+        <button class="db-filter-btn active" data-filter="all" aria-label="Show all">All</button>
+        <button class="db-filter-btn" data-filter="model" aria-label="Show models only">Models</button>
+        <button class="db-filter-btn" data-filter="agent" aria-label="Show agents only">Agents</button>
+      </div>
+    </div>
+
+    <div id="db-grid" class="db-grid"></div>
+
+    <button id="compare-btn" class="btn btn-primary compare-btn hidden" aria-label="Compare selected items">
+      Compare (<span id="compare-count">0</span>)
+    </button>
+  </section>
+
+  <!-- ===== Comparison Modal ===== -->
+  <div id="comparison-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Model Comparison</h3>
+        <button id="comparison-modal-close" class="modal-close btn-ghost" aria-label="Close comparison modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <table id="comparison-table" class="comparison-table">
+          <thead>
+            <tr id="comparison-table-head"></tr>
+          </thead>
+          <tbody id="comparison-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Playbooks Section ===== -->
+  <section id="section-playbooks" class="section section-playbooks">
+    <h2 class="section-title"><span class="gradient-text">Implementation</span> Playbooks</h2>
+    <p class="section-subtitle">Step-by-step guides with working code to build AI agents that produce perfect, error-free outputs.</p>
+
+    <div class="playbook-categories">
+      <button class="playbook-category-btn active" data-category="coding" aria-label="Coding Agent playbook">💻 Coding Agent</button>
+      <button class="playbook-category-btn" data-category="research" aria-label="Research Agent playbook">🔍 Research Agent</button>
+      <button class="playbook-category-btn" data-category="data" aria-label="Data Pipeline playbook">📊 Data Pipeline</button>
+      <button class="playbook-category-btn" data-category="content" aria-label="Content Agent playbook">✍️ Content Agent</button>
+      <button class="playbook-category-btn" data-category="support" aria-label="Support Agent playbook">🎧 Support Agent</button>
+    </div>
+
+    <div id="playbook-content"></div>
+  </section>
+
+  <!-- ===== Prompt Builder Section ===== -->
+  <section id="section-prompt-builder" class="section section-prompt-builder">
+    <h2 class="section-title"><span class="gradient-text">Prompt</span> Optimizer</h2>
+    <p class="section-subtitle">Generate optimized system prompts and configuration templates tailored to your specific model and task.</p>
+
+    <div class="pb-form">
+      <div class="pb-field pb-field-full">
+        <label class="pb-label" for="pb-task">Describe Your Task</label>
+        <textarea id="pb-task" class="pb-textarea" placeholder="e.g., Build an agent that reviews pull requests and suggests improvements..."></textarea>
+      </div>
+      <div class="pb-field">
+        <label class="pb-label" for="pb-model">Target Model</label>
+        <select id="pb-model" class="pb-select" aria-label="Select target model">
+          <option value="">Select a model...</option>
+        </select>
+      </div>
+      <div class="pb-field">
+        <label class="pb-label" for="pb-complexity">Complexity</label>
+        <select id="pb-complexity" class="pb-select" aria-label="Select complexity level">
+          <option value="simple">Simple</option>
+          <option value="moderate" selected>Moderate</option>
+          <option value="complex">Complex</option>
+        </select>
+      </div>
+      <div class="pb-field">
+        <label class="pb-label" for="pb-format">Output Format</label>
+        <select id="pb-format" class="pb-select" aria-label="Select output format">
+          <option value="system-prompt">System Prompt</option>
+          <option value="config">Configuration Template</option>
+          <option value="full">Full Setup (Prompt + Config)</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="pb-generate" class="btn btn-primary btn-lg" aria-label="Generate optimized prompt">⚡ Generate Optimized Prompt</button>
+
+    <div id="pb-output-container" class="pb-output-container glass-card hidden">
+      <div class="pb-output-header">
+        <h3>Generated Output</h3>
+        <button id="pb-copy" class="copy-btn" aria-label="Copy generated output to clipboard">📋 Copy</button>
+      </div>
+      <pre id="pb-output"></pre>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <p class="footer-text">Built with ⚡ by <span class="gradient-text">AI Advisor</span> — Making AI selection effortless</p>
+      <p class="footer-sub">Data updated July 2026 • Not affiliated with any AI provider</p>
+    </div>
+  </footer>
+
+  <!-- ===== Toast Container ===== -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ===== Scripts ===== -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
