@@ -590,7 +590,7 @@ function App() {
     <div className="dashboard-layout">
       {/* Sidebar Navigation */}
       <aside className="sidebar">
-        <div className="sidebar-brand">⚡ AI Advisor</div>
+        <div className="sidebar-brand" style={{ cursor: 'pointer' }} onClick={() => setView('home')}>⚡ AI Advisor</div>
         <nav className="sidebar-menu">
           <button 
             className={`sidebar-link ${activeTab === 'overview' ? 'active' : ''}`}
@@ -655,9 +655,18 @@ function App() {
             {activeTab === 'simulator' && 'Interactive Agent Simulator'}
             {activeTab === 'prompt' && 'Prompt Optimizer'}
           </h2>
-          <div className="topbar-status">
-            <span className="status-dot"></span>
-            <span>Connected to API Server</span>
+          <div className="topbar-status" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            <button 
+              className="btn-ghost" 
+              onClick={() => setView('home')} 
+              style={{ fontSize: '0.85rem', padding: '0.25rem 0.6rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', border: '1px solid var(--glass-border)', borderRadius: '6px', cursor: 'pointer', background: 'none' }}
+            >
+              <span>←</span> Exit to Home
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span className="status-dot"></span>
+              <span>Connected to API Server</span>
+            </div>
           </div>
         </header>
 
