@@ -459,34 +459,58 @@ function App() {
         />
         
         <main style={{ marginTop: '70px' }}>
-          <section id="section-hero" className="section section-hero">
+          <section id="section-hero" className="section section-hero" style={{ padding: '8rem 2rem' }}>
             <div className="hero-content">
-              <div className="hero-badge">🚀 AI-Powered Recommendations</div>
-              <h1 className="hero-title">Find the <span class="gradient-text">Perfect AI</span> for Your Project</h1>
-              <p className="hero-description text-center">
-                Stop guessing which AI model or agent to use. Get personalized recommendations, implementation playbooks, and error-free code templates — all in one place.
+              <div className="hero-badge" style={{ background: 'rgba(139, 92, 246, 0.1)', color: 'var(--color-primary-light)', border: '1px solid var(--glass-border)' }}>
+                🚀 AI-Powered Recommendations
+              </div>
+              <h1 className="hero-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.5rem', textAlign: 'center' }}>
+                Empower Your Organization <br />
+                with <span className="gradient-text">Scalable AI Insights</span>
+              </h1>
+              <p className="hero-description text-center" style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', maxWidth: '680px', margin: '0 auto 2.5rem auto' }}>
+                Drive efficiency and growth with our secure, professional advisor platform designed for enterprise AI agent selection and logic implementation.
               </p>
               
-              <div className="hero-centered-cta">
-                <button className="btn-immersive" onClick={() => handleRouteToDashboard('overview')}>
-                  🚀 Enter Workspace
+              <div className="hero-centered-cta" style={{ display: 'flex', flexDirection: 'row', gap: '1rem', justifyContent: 'center', marginTop: '0' }}>
+                <button 
+                  className="btn btn-secondary btn-lg" 
+                  onClick={() => handleRouteToDashboard('database')}
+                  style={{ padding: '1rem 2rem', borderRadius: '8px', fontWeight: 700, border: '2px solid rgba(255, 255, 255, 0.15)', background: 'transparent', color: 'var(--text-primary)' }}
+                >
+                  Request a Demo
                 </button>
-                <span className="pulse-hint">Access Advisor Dashboard</span>
+                <button 
+                  className="btn btn-primary btn-lg" 
+                  onClick={() => handleRouteToDashboard('overview')}
+                  style={{ padding: '1rem 2rem', borderRadius: '8px', fontWeight: 700, boxShadow: '0 0 15px var(--color-primary-glow)' }}
+                >
+                  Sign Up Free
+                </button>
               </div>
 
-              <div className="hero-stats" style={{ marginTop: '3.5rem' }}>
-                <div className="hero-stat">
-                  <span className="hero-stat-number">{models.length}+</span>
-                  <span className="hero-stat-label">Models Compared</span>
-                </div>
-                <div className="hero-stat">
-                  <span className="hero-stat-number">{agents.length}+</span>
-                  <span className="hero-stat-label">Agent Frameworks</span>
-                </div>
-                <div className="hero-stat">
-                  <span className="hero-stat-number">5</span>
-                  <span className="hero-stat-label">Boilerplate Playbooks</span>
-                </div>
+              {/* Compatible technology provider strip in dark glassmorphism */}
+              <div className="glass-card" style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+                alignItems: 'center',
+                padding: '1.25rem',
+                maxWidth: '850px',
+                margin: '4rem auto 0 auto',
+                borderRadius: '12px',
+                border: '1px solid var(--glass-border)',
+                background: 'var(--glass-bg)',
+                flexWrap: 'wrap',
+                gap: '1.5rem',
+                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-dim)', fontSize: '0.85rem', letterSpacing: '0.5px' }}>INTEGRATES WITH:</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Google Gemini</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Anthropic Claude</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>OpenAI GPT</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Meta Llama</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>DeepSeek</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Mistral AI</span>
               </div>
             </div>
             <div className="hero-orb hero-orb-1"></div>
