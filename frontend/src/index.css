@@ -1614,3 +1614,368 @@ a {
 a:hover {
   color: var(--color-primary);
 }
+
+/* ── Dashboard Layout & Navigation ────────────────────────── */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.sidebar {
+  background: rgba(10, 14, 26, 0.95);
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  backdrop-filter: blur(12px);
+  padding: 1.5rem;
+}
+
+.sidebar-brand {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.sidebar-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border-color: rgba(139, 92, 246, 0.1);
+}
+
+.sidebar-link.active {
+  color: var(--color-primary-light);
+  background: rgba(139, 92, 246, 0.1);
+  border-color: var(--glass-border);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+}
+
+.sidebar-link-icon {
+  font-size: 1.2rem;
+  display: inline-block;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 1rem;
+}
+
+.dashboard-main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.dashboard-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  background: rgba(10, 14, 26, 0.5);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+}
+
+.topbar-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success);
+}
+
+.status-dot.loading {
+  background: var(--color-warning);
+  box-shadow: 0 0 8px var(--color-warning);
+  animation: pulse 1.5s infinite;
+}
+
+.dashboard-body {
+  padding: 2rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+}
+
+/* ── Overview Hub ────────────────────────────────────────── */
+.overview-header {
+  margin-bottom: 2rem;
+}
+
+.overview-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.overview-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.overview-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--color-primary-light);
+}
+
+.overview-card-icon.pink {
+  background: rgba(236, 72, 153, 0.1);
+  color: var(--color-secondary-light);
+}
+
+.overview-card-icon.cyan {
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--color-accent-light);
+}
+
+.overview-card-value {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.overview-card-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.shortcuts-section {
+  margin-bottom: 2.5rem;
+}
+
+.shortcuts-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.shortcut-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcut-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+}
+
+.shortcut-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.shortcut-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.shortcut-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.shortcut-arrow {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--color-primary-light);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ── Immersive Centered Launch Button ────────────────────── */
+.hero-centered-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.btn-immersive {
+  padding: 1.25rem 2.5rem;
+  font-size: 1.2rem;
+  border-radius: 50px;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 0 25px var(--color-primary-glow);
+  transition: all 0.4s ease;
+}
+
+.btn-immersive:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 35px var(--color-primary-glow), 0 0 15px var(--color-secondary);
+  filter: brightness(1.1);
+}
+
+.btn-immersive::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50px;
+  background: var(--gradient-primary);
+  z-index: -1;
+  opacity: 0.4;
+  filter: blur(8px);
+  animation: pulse 2s infinite;
+}
+
+.pulse-hint {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: pulse 2s infinite;
+}
+
+/* ── Responsive Sidebar ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    padding: 0.5rem;
+    justify-content: space-around;
+    align-items: center;
+    border-right: none;
+    border-top: 1px solid var(--glass-border);
+  }
+  
+  .sidebar-brand {
+    display: none;
+  }
+  
+  .sidebar-menu {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    gap: 0;
+  }
+  
+  .sidebar-link {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    border-radius: 8px;
+  }
+  
+  .sidebar-link span:not(.sidebar-link-icon) {
+    display: none; /* Hide label on mobile to fit icons */
+  }
+  
+  .sidebar-footer {
+    display: none;
+  }
+  
+  .dashboard-main {
+    height: calc(100vh - 60px);
+  }
+}

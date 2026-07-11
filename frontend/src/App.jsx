@@ -183,7 +183,9 @@ function App() {
   const [agents, setAgents] = useState(FALLBACK_DATA.agents);
   const [playbooks, setPlaybooks] = useState(FALLBACK_DATA.playbooks);
   
-  const [activeSection, setActiveSection] = useState('hero');
+  const [view, setView] = useState('home'); // 'home' | 'dashboard'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'advisor' | 'database' | 'playbooks' | 'prompt' | 'simulator'
+  
   const [toasts, setToasts] = useState([]);
   const [compareSet, setCompareSet] = useState(new Set());
   const [isModalActive, setIsModalActive] = useState(false);
@@ -215,7 +217,6 @@ function App() {
         const pRes = await fetch('/api/playbooks');
         if (pRes.ok) {
           const pData = await pRes.json();
-          // Merge fetched playbooks with local template fallbacks in case categories are empty
           setPlaybooks(prev => ({ ...prev, ...pData }));
         }
       } catch (err) {
@@ -226,32 +227,15 @@ function App() {
     fetchData();
   }, []);
 
-  // Track active section via IntersectionObserver
+  // Key bindings for modal closing
   useEffect(() => {
-    const sections = document.querySelectorAll('section[id]');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.id.replace('section-', '');
-          setActiveSection(sectionId);
-        }
-      });
-    }, { threshold: 0.2, rootMargin: '-10% 0px -40% 0px' });
-
-    sections.forEach(s => observer.observe(s));
-    
-    // Key bindings for modal closing
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setIsModalActive(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      sections.forEach(s => observer.unobserve(s));
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const showToast = (message, type = 'info') => {
@@ -262,52 +246,309 @@ function App() {
     }, 3200);
   };
 
-  return (
-    <>
-      <Header activeSection={activeSection} />
-      
-      <main style={{ marginTop: '70px' }}>
-        <Hero showToast={showToast} />
-        <AdvisorWizard models={models} agents={agents} showToast={showToast} />
-        <ModelDatabase 
-          models={models} 
-          agents={agents} 
-          compareSet={compareSet} 
-          setCompareSet={setCompareSet}
-          isModalActive={isModalActive}
-          setIsModalActive={setIsModalActive}
-          showToast={showToast} 
+  const handleRouteToDashboard = (tabName) => {
+    setView('dashboard');
+    setActiveTab(tabName);
+    window.scrollTo({ top: 0 });
+  };
+
+  if (view === 'home') {
+    return (
+      <>
+        <Header 
+          view={view} 
+          setView={setView} 
+          setActiveTab={setActiveTab} 
+          handleRoute={handleRouteToDashboard} 
         />
-        <PlaybookViewer playbooks={playbooks} showToast={showToast} />
-        <AgentSimulator />
-        <PromptOptimizer models={models} showToast={showToast} />
+        
+        <main style={{ marginTop: '70px' }}>
+          <section id="section-hero" className="section section-hero">
+            <div className="hero-content">
+              <div className="hero-badge">🚀 AI-Powered Recommendations</div>
+              <h1 className="hero-title">Find the <span class="gradient-text">Perfect AI</span> for Your Project</h1>
+              <p className="hero-description text-center">
+                Stop guessing which AI model or agent to use. Get personalized recommendations, implementation playbooks, and error-free code templates — all in one place.
+              </p>
+              
+              <div className="hero-centered-cta">
+                <button className="btn-immersive" onClick={() => handleRouteToDashboard('overview')}>
+                  🚀 Enter Workspace
+                </button>
+                <span className="pulse-hint">Access Advisor Dashboard</span>
+              </div>
+
+              <div className="hero-stats" style={{ marginTop: '3.5rem' }}>
+                <div className="hero-stat">
+                  <span className="hero-stat-number">{models.length}+</span>
+                  <span className="hero-stat-label">Models Compared</span>
+                </div>
+                <div className="hero-stat">
+                  <span className="hero-stat-number">{agents.length}+</span>
+                  <span className="hero-stat-label">Agent Frameworks</span>
+                </div>
+                <div className="hero-stat">
+                  <span className="hero-stat-number">5</span>
+                  <span className="hero-stat-label">Boilerplate Playbooks</span>
+                </div>
+              </div>
+            </div>
+            <div className="hero-orb hero-orb-1"></div>
+            <div className="hero-orb hero-orb-2"></div>
+          </section>
+
+          {/* Features Grid Section on Home Page */}
+          <section className="section" style={{ borderTop: '1px solid var(--glass-border)', padding: '5rem 2rem' }}>
+            <h2 className="section-title text-center">Complete <span className="gradient-text">Agent Toolkit</span></h2>
+            <p className="section-subtitle text-center">Explore all the capabilities built into your interactive workspace</p>
+            
+            <div className="shortcuts-grid" style={{ marginTop: '3.5rem' }}>
+              <div className="glass-card shortcut-card" onClick={() => handleRouteToDashboard('advisor')}>
+                <div className="shortcut-icon">🎯</div>
+                <h3 className="shortcut-name">Smart Advisor Wizard</h3>
+                <p className="shortcut-desc">Answer key questions about your task domain, complexity, and budget to get custom recommendations.</p>
+                <div className="shortcut-arrow">Open Wizard →</div>
+              </div>
+
+              <div className="glass-card shortcut-card" onClick={() => handleRouteToDashboard('database')}>
+                <div className="shortcut-icon">📊</div>
+                <h3 className="shortcut-name">Model & Agent Database</h3>
+                <p className="shortcut-desc">Browse, search, and filter leading models (Gemini, Claude, GPT) and frameworks with side-by-side comparisons.</p>
+                <div className="shortcut-arrow">Explore Database →</div>
+              </div>
+
+              <div className="glass-card shortcut-card" onClick={() => handleRouteToDashboard('playbooks')}>
+                <div className="shortcut-icon">📖</div>
+                <h3 className="shortcut-name">Code Playbooks</h3>
+                <p className="shortcut-desc">Step-by-step guides with robust, copy-pasteable Python and JavaScript boilerplate integrations.</p>
+                <div className="shortcut-arrow">View Playbooks →</div>
+              </div>
+
+              <div className="glass-card shortcut-card" onClick={() => handleRouteToDashboard('simulator')}>
+                <div className="shortcut-icon">🎮</div>
+                <h3 className="shortcut-name">Live Agent Simulator</h3>
+                <p className="shortcut-desc">Watch mock agent executions stream live logs, tool usage, errors, and self-corrections via SSE.</p>
+                <div className="shortcut-arrow">Launch Simulator →</div>
+              </div>
+
+              <div className="glass-card shortcut-card" onClick={() => handleRouteToDashboard('prompt')}>
+                <div className="shortcut-icon">⚡</div>
+                <h3 className="shortcut-name">Prompt Optimizer</h3>
+                <p className="shortcut-desc">Generate error-free system prompts and configuration templates optimized for specific models.</p>
+                <div className="shortcut-arrow">Optimize Prompts →</div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <Footer />
+        <ToastContainer toasts={toasts} />
+      </>
+    );
+  }
+
+  // Render Dashboard View
+  return (
+    <div className="dashboard-layout">
+      {/* Sidebar Navigation */}
+      <aside className="sidebar">
+        <div className="sidebar-brand">⚡ AI Advisor</div>
+        <nav className="sidebar-menu">
+          <button 
+            className={`sidebar-link ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            <span className="sidebar-link-icon">🏠</span>
+            <span>Workspace Home</span>
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'advisor' ? 'active' : ''}`}
+            onClick={() => setActiveTab('advisor')}
+          >
+            <span className="sidebar-link-icon">🎯</span>
+            <span>Advisor Wizard</span>
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'database' ? 'active' : ''}`}
+            onClick={() => setActiveTab('database')}
+          >
+            <span className="sidebar-link-icon">📊</span>
+            <span>Models & Agents</span>
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'playbooks' ? 'active' : ''}`}
+            onClick={() => setActiveTab('playbooks')}
+          >
+            <span className="sidebar-link-icon">📖</span>
+            <span>Code Playbooks</span>
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'simulator' ? 'active' : ''}`}
+            onClick={() => setActiveTab('simulator')}
+          >
+            <span className="sidebar-link-icon">🎮</span>
+            <span>Agent Simulator</span>
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'prompt' ? 'active' : ''}`}
+            onClick={() => setActiveTab('prompt')}
+          >
+            <span className="sidebar-link-icon">⚡</span>
+            <span>Prompt Builder</span>
+          </button>
+        </nav>
+        
+        <div className="sidebar-footer">
+          <button className="sidebar-link" onClick={() => setView('home')}>
+            <span className="sidebar-link-icon">←</span>
+            <span>Exit to Home</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Workspace */}
+      <main className="dashboard-main">
+        <header className="dashboard-topbar">
+          <h2 className="topbar-title">
+            {activeTab === 'overview' && 'Workspace Overview'}
+            {activeTab === 'advisor' && 'AI Advisor Wizard'}
+            {activeTab === 'database' && 'AI Model & Agent Database'}
+            {activeTab === 'playbooks' && 'Implementation Playbooks'}
+            {activeTab === 'simulator' && 'Interactive Agent Simulator'}
+            {activeTab === 'prompt' && 'Prompt Optimizer'}
+          </h2>
+          <div className="topbar-status">
+            <span className="status-dot"></span>
+            <span>Connected to API Server</span>
+          </div>
+        </header>
+
+        <div className="dashboard-body">
+          {activeTab === 'overview' && (
+            <div className="overview-hub fade-in">
+              <header className="overview-header">
+                <h1 className="overview-title">Welcome to your AI Agent Workspace</h1>
+                <p className="section-subtitle">Select a tool from the sidebar or choose a quick shortcut below to start building.</p>
+              </header>
+
+              <div className="overview-grid">
+                <div className="glass-card overview-card">
+                  <div className="overview-card-icon">🤖</div>
+                  <div>
+                    <div className="overview-card-value">{models.length}</div>
+                    <div className="overview-card-label">Verified Models</div>
+                  </div>
+                </div>
+                <div className="glass-card overview-card">
+                  <div className="overview-card-icon pink">👥</div>
+                  <div>
+                    <div className="overview-card-value">{agents.length}</div>
+                    <div className="overview-card-label">Agent Frameworks</div>
+                  </div>
+                </div>
+                <div className="glass-card overview-card">
+                  <div className="overview-card-icon cyan">📖</div>
+                  <div>
+                    <div className="overview-card-value">5</div>
+                    <div className="overview-card-label">Structured Playbooks</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="shortcuts-section">
+                <h3 className="shortcuts-title">Quick Actions</h3>
+                <div className="shortcuts-grid">
+                  <div className="glass-card shortcut-card" onClick={() => setActiveTab('advisor')}>
+                    <div className="shortcut-icon">🎯</div>
+                    <h3 className="shortcut-name">Find the Best AI</h3>
+                    <p className="shortcut-desc">Run the 4-step wizard to find which model and agent framework to choose for your project constraints.</p>
+                    <div className="shortcut-arrow">Configure Wizard →</div>
+                  </div>
+
+                  <div className="glass-card shortcut-card" onClick={() => setActiveTab('simulator')}>
+                    <div className="shortcut-icon">🎮</div>
+                    <h3 className="shortcut-name">Run Live Simulation</h3>
+                    <p className="shortcut-desc">Open the logs stream to watch an autonomous agent write code, parse files, detect errors, and perform self-corrections.</p>
+                    <div className="shortcut-arrow">Launch Sandbox →</div>
+                  </div>
+
+                  <div className="glass-card shortcut-card" onClick={() => setActiveTab('prompt')}>
+                    <div className="shortcut-icon">⚡</div>
+                    <h3 className="shortcut-name">Write System Prompt</h3>
+                    <p className="shortcut-desc">Generate model-specific optimized system prompts and parameters config to receive perfect outputs.</p>
+                    <div className="shortcut-arrow">Build Prompts →</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'advisor' && (
+            <AdvisorWizard models={models} agents={agents} showToast={showToast} />
+          )}
+
+          {activeTab === 'database' && (
+            <ModelDatabase 
+              models={models} 
+              agents={agents} 
+              compareSet={compareSet} 
+              setCompareSet={setCompareSet}
+              isModalActive={isModalActive}
+              setIsModalActive={setIsModalActive}
+              showToast={showToast} 
+            />
+          )}
+
+          {activeTab === 'playbooks' && (
+            <PlaybookViewer playbooks={playbooks} showToast={showToast} />
+          )}
+
+          {activeTab === 'simulator' && (
+            <AgentSimulator />
+          )}
+
+          {activeTab === 'prompt' && (
+            <PromptOptimizer models={models} showToast={showToast} />
+          )}
+        </div>
       </main>
 
-      <Footer />
       <ToastContainer toasts={toasts} />
-    </>
+    </div>
   );
 }
 
 /* ========================================================================
    SUB-COMPONENT: HEADER
    ======================================================================== */
-const Header = ({ activeSection }) => {
+const Header = ({ view, setView, setActiveTab, handleRoute }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const handleScrollTo = (e, targetId) => {
-    e.preventDefault();
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setMobileOpen(false);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <nav id="main-nav">
+    <nav 
+      id="main-nav" 
+      style={{
+        background: scrolled ? 'rgba(10, 14, 26, 0.95)' : 'rgba(10, 14, 26, 0.8)',
+        boxShadow: scrolled ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
+      }}
+    >
       <div className="nav-container">
-        <a href="#" className="nav-logo" onClick={(e) => handleScrollTo(e, 'section-hero')}>⚡ AI Advisor</a>
+        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); setView('home'); }}>
+          ⚡ AI Advisor
+        </a>
         <ul className={`nav-links ${mobileOpen ? 'open' : ''}`} style={mobileOpen ? {
           display: 'flex',
           flexDirection: 'column',
@@ -323,68 +564,79 @@ const Header = ({ activeSection }) => {
         } : {}}>
           <li>
             <a 
-              href="#section-hero" 
-              className={`nav-link ${activeSection === 'hero' ? 'active' : ''}`}
-              onClick={(e) => handleScrollTo(e, 'section-hero')}
+              href="#" 
+              className="nav-link active"
+              onClick={(e) => { e.preventDefault(); setView('home'); setMobileOpen(false); }}
             >
               Home
             </a>
           </li>
           <li>
             <a 
-              href="#section-advisor" 
-              className={`nav-link ${activeSection === 'advisor' ? 'active' : ''}`}
-              onClick={(e) => handleScrollTo(e, 'section-advisor')}
+              href="#" 
+              className="nav-link"
+              onClick={(e) => { e.preventDefault(); handleRoute('advisor'); setMobileOpen(false); }}
             >
               Advisor
             </a>
           </li>
           <li>
             <a 
-              href="#section-database" 
-              className={`nav-link ${activeSection === 'database' ? 'active' : ''}`}
-              onClick={(e) => handleScrollTo(e, 'section-database')}
+              href="#" 
+              className="nav-link"
+              onClick={(e) => { e.preventDefault(); handleRoute('database'); setMobileOpen(false); }}
             >
               Database
             </a>
           </li>
           <li>
             <a 
-              href="#section-playbooks" 
-              className={`nav-link ${activeSection === 'playbooks' ? 'active' : ''}`}
-              onClick={(e) => handleScrollTo(e, 'section-playbooks')}
+              href="#" 
+              className="nav-link"
+              onClick={(e) => { e.preventDefault(); handleRoute('playbooks'); setMobileOpen(false); }}
             >
               Playbooks
             </a>
           </li>
           <li>
             <a 
-              href="#section-simulator" 
-              className={`nav-link ${activeSection === 'simulator' ? 'active' : ''}`}
-              onClick={(e) => handleScrollTo(e, 'section-simulator')}
+              href="#" 
+              className="nav-link"
+              onClick={(e) => { e.preventDefault(); handleRoute('simulator'); setMobileOpen(false); }}
             >
               Simulator
             </a>
           </li>
           <li>
             <a 
-              href="#section-prompt-builder" 
-              className={`nav-link ${activeSection === 'prompt-builder' ? 'active' : ''}`}
-              onClick={(e) => handleScrollTo(e, 'section-prompt-builder')}
+              href="#" 
+              className="nav-link"
+              onClick={(e) => { e.preventDefault(); handleRoute('prompt'); setMobileOpen(false); }}
             >
               Prompt Builder
             </a>
           </li>
         </ul>
-        <button 
-          className="nav-mobile-toggle btn-ghost" 
-          id="mobile-nav-toggle" 
-          aria-label="Toggle navigation"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          style={{ fontSize: '1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          ☰
-        </button>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button 
+            className="btn btn-primary btn-sm" 
+            onClick={() => handleRoute('overview')}
+            style={{ borderRadius: '20px' }}
+          >
+            Launch Workspace
+          </button>
+          
+          <button 
+            className="nav-mobile-toggle btn-ghost" 
+            id="mobile-nav-toggle" 
+            aria-label="Toggle navigation"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            style={{ fontSize: '1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            ☰
+          </button>
+        </div>
       </div>
     </nav>
   );
