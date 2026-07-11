@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AgentSimulator from './components/AgentSimulator';
 
 // Static local fallback datasets matching data_store.py structure

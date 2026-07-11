@@ -29,36 +29,35 @@ echo Node.js detected.
 echo.
 
 :: Setup Frontend
-echo [3/4] Checking and installing frontend dependencies...
+echo [3/4] Building frontend static assets...
 if not exist "frontend\node_modules\" (
     echo node_modules not found in frontend. Installing now...
-    cd frontend && npm install && cd ..
+    cd frontend && npm install && npm run build && cd ..
 ) else (
-    echo Frontend dependencies already installed.
+    echo Building React files...
+    cd frontend && npm run build && cd ..
 )
 echo.
 
 :: Launch Services
 echo [4/4] Starting servers...
 echo.
-echo Starting FastAPI Backend on http://127.0.0.1:8000 ...
-start "AI Advisor - FastAPI Backend" cmd /k "cd backend && uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
-
-echo Starting Vite React Frontend on http://localhost:5173 ...
-start "AI Advisor - Vite Frontend" cmd /k "cd frontend && npm run dev"
+echo Starting Integrated FastAPI Server on http://127.0.0.1:8080 ...
+start "AI Advisor - Integrated Server" cmd /k "cd backend && uvicorn main:app --host 127.0.0.1 --port 8080 --reload"
 
 echo.
-echo Waiting 3 seconds for servers to initialize...
+echo Waiting 3 seconds for server to initialize...
 timeout /t 3 /nobreak >nul
 
 echo Opening browser to AI Advisor...
-start http://localhost:5173
+start http://localhost:8080
 
 echo.
 echo ========================================================
-echo   Launcher complete! Both servers are running in the
-echo   background. Keep this window open if you want, or
-echo   you can close it. To stop, close the spawned consoles.
+echo   Launcher complete! The integrated FastAPI server is
+echo   running in the background. Keep this window open if you 
+echo   want, or you can close it. To stop, close the spawned 
+echo   Integrated Server console.
 echo ========================================================
 echo.
 pause
