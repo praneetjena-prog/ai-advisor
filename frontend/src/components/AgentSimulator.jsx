@@ -677,7 +677,7 @@ const AgentSimulator = () => {
       stepCounterRef.current = 0;
     }
 
-    const url = `http://localhost:8000/api/simulate/${activeScenario}?speed=${speed}`;
+    const url = `/api/simulate/${activeScenario}?speed=${speed}`;
     const es = new EventSource(url);
     eventSourceRef.current = es;
 
@@ -764,7 +764,7 @@ const AgentSimulator = () => {
       skipCountRef.current = currentStepIndex;
       stepCounterRef.current = 0;
 
-      const url = `http://localhost:8000/api/simulate/${activeScenario}?speed=${newSpeed}`;
+      const url = `/api/simulate/${activeScenario}?speed=${newSpeed}`;
       const es = new EventSource(url);
       eventSourceRef.current = es;
 

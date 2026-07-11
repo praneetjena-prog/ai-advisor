@@ -26,7 +26,7 @@ export default function PromptOptimizer({ models = [] }) {
     setOutput('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/optimize-prompt', {
+      const response = await fetch('/api/optimize-prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -192,7 +192,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const mRes = await fetch('http://localhost:8000/api/models');
+        const mRes = await fetch('/api/models');
         if (mRes.ok) {
           const mData = await mRes.json();
           setModels(mData);
@@ -202,7 +202,7 @@ function App() {
       }
 
       try {
-        const aRes = await fetch('http://localhost:8000/api/agents');
+        const aRes = await fetch('/api/agents');
         if (aRes.ok) {
           const aData = await aRes.json();
           setAgents(aData);
@@ -212,7 +212,7 @@ function App() {
       }
 
       try {
-        const pRes = await fetch('http://localhost:8000/api/playbooks');
+        const pRes = await fetch('/api/playbooks');
         if (pRes.ok) {
           const pData = await pRes.json();
           // Merge fetched playbooks with local template fallbacks in case categories are empty
