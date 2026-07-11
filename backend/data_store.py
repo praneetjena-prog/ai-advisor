@@ -58,6 +58,62 @@ models = [
         "icon": "🌟"
     },
     {
+        "id": "gpt-4-1",
+        "name": "GPT-4.1",
+        "provider": "OpenAI",
+        "description": "OpenAI's strong instruction-following model with an expanded context window. Superb at systematic task execution and programming.",
+        "contextWindow": "1M tokens",
+        "pricing": "$2.00 / $8.00 per 1M tokens",
+        "speed": "medium",
+        "bestFor": ["Instruction following", "Coding & code review", "Systematic planning", "Long-context tasks"],
+        "strengths": ["Excellent structured format output", "Highly stable tool calling", "Consistent output formatting"],
+        "weaknesses": ["Less creative expression than Claude", "Expensive on huge outputs"],
+        "tier": "medium",
+        "icon": "🎯"
+    },
+    {
+        "id": "gpt-4-1-mini",
+        "name": "GPT-4.1 Mini",
+        "provider": "OpenAI",
+        "description": "OpenAI's lightweight model optimized for high-volume tasks. Offers high speed and low cost for classification and quick prototyping.",
+        "contextWindow": "1M tokens",
+        "pricing": "$0.40 / $1.60 per 1M tokens",
+        "speed": "fast",
+        "bestFor": ["Cost-effective scaling", "Summarization", "Classification", "Quick prototyping"],
+        "strengths": ["Very affordable", "Fast execution speeds", "1M context support"],
+        "weaknesses": ["Lower reasoning capability for multi-step logic"],
+        "tier": "low",
+        "icon": "🎈"
+    },
+    {
+        "id": "gpt-4o",
+        "name": "GPT-4o",
+        "provider": "OpenAI",
+        "description": "OpenAI's flagship multimodal model, highly optimized for real-time applications and complex multimedia asset parsing.",
+        "contextWindow": "128K tokens",
+        "pricing": "$2.50 / $10.00 per 1M tokens",
+        "speed": "fast",
+        "bestFor": ["Multimodal tasks", "Image & document parsing", "Real-time chat", "API orchestrations"],
+        "strengths": ["Industry-leading image parsing", "Fast processing speed", "Strong standard reasoning"],
+        "weaknesses": ["Context window is smaller compared to Gemini"],
+        "tier": "medium",
+        "icon": "👁️"
+    },
+    {
+        "id": "llama-4-maverick",
+        "name": "Llama 4 Maverick",
+        "provider": "Meta",
+        "description": "Meta's flagship open-weights model. Offers competitive logic reasoning and complete deployment control for privacy-centric local environments.",
+        "contextWindow": "1M tokens",
+        "pricing": "Free (Open Weights)",
+        "speed": "medium",
+        "bestFor": ["Self-hosted deployments", "Data privacy", "Fine-tuning", "Custom configurations"],
+        "strengths": ["Fully open-weights", "Completely custom configurations", "No vendor API lock-in"],
+        "weaknesses": ["Requires self-hosted infrastructure", "Lower support resources"],
+        "tier": "free",
+        "icon": "🦙"
+    },
+    {
         "id": "deepseek-r1",
         "name": "DeepSeek R1",
         "provider": "DeepSeek",
@@ -70,6 +126,34 @@ models = [
         "weaknesses": ["Slower response times due to CoT", "Less polished general conversation"],
         "tier": "low",
         "icon": "🧠"
+    },
+    {
+        "id": "mistral-large",
+        "name": "Mistral Large",
+        "provider": "Mistral AI",
+        "description": "Mistral AI's premier European model. Specifically fine-tuned for multilingual logic parsing and strict compliance standards.",
+        "contextWindow": "128K tokens",
+        "pricing": "$2.00 / $6.00 per 1M tokens",
+        "speed": "medium",
+        "bestFor": ["Multilingual tasks", "European compliance", "Code generation", "Entity extraction"],
+        "strengths": ["Superb French/German/Spanish logic", "EU compliance friendly", "Strong base capabilities"],
+        "weaknesses": ["Smaller developer ecosystem", "Slower API update cycles"],
+        "tier": "medium",
+        "icon": "🇫🇷"
+    },
+    {
+        "id": "grok-3",
+        "name": "Grok 3",
+        "provider": "xAI",
+        "description": "xAI's latest model designed with real-time access to information and strong mathematical reasoning skills.",
+        "contextWindow": "128K tokens",
+        "pricing": "$3.00 / $15.00 per 1M tokens",
+        "speed": "medium",
+        "bestFor": ["Real-time data research", "Mathematical tasks", "Creative problem solving", "Conversational AI"],
+        "strengths": ["Access to real-time search corpus", "Strong math & logic score", "Witty conversational mode"],
+        "weaknesses": ["Smaller developer integrations library", "Higher billing tier"],
+        "tier": "medium",
+        "icon": "🛸"
     }
 ]
 
