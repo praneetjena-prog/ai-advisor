@@ -789,78 +789,10 @@ const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick }) => 
         boxShadow: scrolled ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
       }}
     >
-      <div className="nav-container">
+      <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
         <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); setView('home'); }}>
           ⚡ AI Advisor
         </a>
-        <ul className={`nav-links ${mobileOpen ? 'open' : ''}`} style={mobileOpen ? {
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'absolute',
-          top: '60px',
-          left: 0,
-          right: 0,
-          background: 'var(--bg-secondary)',
-          padding: '1.5rem',
-          borderBottom: '1px solid var(--glass-border)',
-          gap: '1rem',
-          zIndex: 999
-        } : {}}>
-          <li>
-            <a 
-              href="#" 
-              className="nav-link active"
-              onClick={(e) => { e.preventDefault(); setView('home'); setMobileOpen(false); }}
-            >
-              Home
-            </a>
-          </li>
-          <li>
-            <a 
-              href="#" 
-              className="nav-link"
-              onClick={(e) => { e.preventDefault(); handleRoute('advisor'); setMobileOpen(false); }}
-            >
-              Advisor
-            </a>
-          </li>
-          <li>
-            <a 
-              href="#" 
-              className="nav-link"
-              onClick={(e) => { e.preventDefault(); handleRoute('database'); setMobileOpen(false); }}
-            >
-              Database
-            </a>
-          </li>
-          <li>
-            <a 
-              href="#" 
-              className="nav-link"
-              onClick={(e) => { e.preventDefault(); handleRoute('playbooks'); setMobileOpen(false); }}
-            >
-              Playbooks
-            </a>
-          </li>
-          <li>
-            <a 
-              href="#" 
-              className="nav-link"
-              onClick={(e) => { e.preventDefault(); handleRoute('simulator'); setMobileOpen(false); }}
-            >
-              Simulator
-            </a>
-          </li>
-          <li>
-            <a 
-              href="#" 
-              className="nav-link"
-              onClick={(e) => { e.preventDefault(); handleRoute('prompt'); setMobileOpen(false); }}
-            >
-              Prompt Builder
-            </a>
-          </li>
-        </ul>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button 
@@ -877,16 +809,6 @@ const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick }) => 
             style={{ borderRadius: '20px', padding: '0.4rem 1.2rem', fontSize: '0.85rem' }}
           >
             Sign Up Free
-          </button>
-          
-          <button 
-            className="nav-mobile-toggle btn-ghost" 
-            id="mobile-nav-toggle" 
-            aria-label="Toggle navigation"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            style={{ fontSize: '1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            ☰
           </button>
         </div>
       </div>
