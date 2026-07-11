@@ -385,6 +385,7 @@ function App() {
   const [toasts, setToasts] = useState([]);
   const [compareSet, setCompareSet] = useState(new Set());
   const [isModalActive, setIsModalActive] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
   // Fetch datasets from backend on load
   useEffect(() => {
@@ -456,6 +457,7 @@ function App() {
           setView={setView} 
           setActiveTab={setActiveTab} 
           handleRoute={handleRouteToDashboard} 
+          onSignUpClick={() => setIsSignUpOpen(true)}
         />
         
         <main style={{ marginTop: '70px' }}>
@@ -482,7 +484,7 @@ function App() {
                 </button>
                 <button 
                   className="btn btn-primary btn-lg" 
-                  onClick={() => handleRouteToDashboard('overview')}
+                  onClick={() => setIsSignUpOpen(true)}
                   style={{ padding: '1rem 2rem', borderRadius: '8px', fontWeight: 700, boxShadow: '0 0 15px var(--color-primary-glow)' }}
                 >
                   Sign Up Free
@@ -490,28 +492,38 @@ function App() {
               </div>
 
               {/* Compatible technology provider strip in dark glassmorphism */}
-              <div className="glass-card" style={{
-                display: 'flex',
-                justifyContent: 'space-around',
-                alignItems: 'center',
-                padding: '1.25rem',
-                maxWidth: '850px',
-                margin: '4rem auto 0 auto',
-                borderRadius: '12px',
-                border: '1px solid var(--glass-border)',
-                background: 'var(--glass-bg)',
-                flexWrap: 'wrap',
-                gap: '1.5rem',
-                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
-              }}>
-                <span style={{ fontWeight: 600, color: 'var(--text-dim)', fontSize: '0.85rem', letterSpacing: '0.5px' }}>INTEGRATES WITH:</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Google Gemini</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Anthropic Claude</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>OpenAI GPT</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Meta Llama</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>DeepSeek</span>
-                <span style={{ fontWeight: 700, color: 'var(--text-secondary)', opacity: 0.85 }}>Mistral AI</span>
+              <div className="integration-strip">
+                <span className="integration-label">INTEGRATES WITH</span>
+                <div className="integration-logo-container">
+                  <span className="integration-logo" onClick={() => handleRouteToDashboard('database')}>
+                    <span>🪐</span> Google Gemini
+                  </span>
+                  <span className="integration-logo" onClick={() => handleRouteToDashboard('database')}>
+                    <span>🍁</span> Anthropic Claude
+                  </span>
+                  <span className="integration-logo" onClick={() => handleRouteToDashboard('database')}>
+                    <span>🟢</span> OpenAI GPT
+                  </span>
+                  <span className="integration-logo" onClick={() => handleRouteToDashboard('database')}>
+                    <span>🦙</span> Meta Llama
+                  </span>
+                  <span className="integration-logo" onClick={() => handleRouteToDashboard('database')}>
+                    <span>🧠</span> DeepSeek
+                  </span>
+                  <span className="integration-logo" onClick={() => handleRouteToDashboard('database')}>
+                    <span>🌀</span> Mistral AI
+                  </span>
+                </div>
               </div>
+              <p className="text-center" style={{
+                fontSize: '0.75rem',
+                color: 'var(--text-dim)',
+                marginTop: '1rem',
+                opacity: 0.65,
+                letterSpacing: '0.3px'
+              }}>
+                * All product names, logos, and brands are property of their respective owners. All company, product, and service names used in this website are for identification purposes only.
+              </p>
             </div>
             <div className="hero-orb hero-orb-1"></div>
             <div className="hero-orb hero-orb-2"></div>
@@ -562,6 +574,12 @@ function App() {
         </main>
 
         <Footer />
+        <SignUpModal 
+          isOpen={isSignUpOpen} 
+          onClose={() => setIsSignUpOpen(false)} 
+          onSuccess={() => handleRouteToDashboard('overview')} 
+          showToast={showToast} 
+        />
         <ToastContainer toasts={toasts} />
       </>
     );
@@ -733,6 +751,12 @@ function App() {
         </div>
       </main>
 
+      <SignUpModal 
+        isOpen={isSignUpOpen} 
+        onClose={() => setIsSignUpOpen(false)} 
+        onSuccess={() => handleRouteToDashboard('overview')} 
+        showToast={showToast} 
+      />
       <ToastContainer toasts={toasts} />
     </div>
   );
@@ -741,7 +765,7 @@ function App() {
 /* ========================================================================
    SUB-COMPONENT: HEADER
    ======================================================================== */
-const Header = ({ view, setView, setActiveTab, handleRoute }) => {
+const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -840,11 +864,19 @@ const Header = ({ view, setView, setActiveTab, handleRoute }) => {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button 
-            className="btn btn-primary btn-sm" 
+            className="btn btn-secondary btn-sm" 
             onClick={() => handleRoute('overview')}
-            style={{ borderRadius: '20px' }}
+            style={{ borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.85rem' }}
           >
             Launch Workspace
+          </button>
+          
+          <button 
+            className="btn btn-primary btn-sm" 
+            onClick={onSignUpClick}
+            style={{ borderRadius: '20px', padding: '0.4rem 1.2rem', fontSize: '0.85rem' }}
+          >
+            Sign Up Free
           </button>
           
           <button 
@@ -1948,6 +1980,103 @@ const ToastContainer = ({ toasts }) => {
           <span>{t.message}</span>
         </div>
       ))}
+    </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: SIGN UP MODAL
+   ======================================================================== */
+const SignUpModal = ({ isOpen, onClose, onSuccess, showToast }) => {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    password: '',
+    provider: 'gemini'
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.password) {
+      showToast("Please fill in all required fields.", "error");
+      return;
+    }
+    showToast(`⚡ Welcome, ${formData.name}! Your free account was created.`, "success");
+    onClose();
+    onSuccess();
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px', padding: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }} className="gradient-text">Create Free Account</h2>
+          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', padding: '0.25rem 0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
+        </div>
+        
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+          Get instant access to recommendations, interactive playbooks, and simulated test loops.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Full Name</label>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="Alex Carter"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Work Email</label>
+            <input 
+              type="email" 
+              className="form-control" 
+              placeholder="alex@company.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Password</label>
+            <input 
+              type="password" 
+              className="form-control" 
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Primary AI Interest</label>
+            <select 
+              className="form-control"
+              value={formData.provider}
+              onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '0.6rem', borderRadius: '6px', width: '100%' }}
+            >
+              <option value="gemini">Google Gemini (Massive Context)</option>
+              <option value="claude">Anthropic Claude (Complex Coding)</option>
+              <option value="openai">OpenAI GPT (Structured Output)</option>
+              <option value="llama">Meta Llama (Self-Hosted)</option>
+            </select>
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '0.5rem', padding: '0.8rem' }}>
+            Get Started Free
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
