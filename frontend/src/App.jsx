@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import AgentSimulator from './components/AgentSimulator';
+import logoImg from './assets/logo.png';
+
 
 // Static local fallback datasets matching data_store.py structure
 const FALLBACK_DATA = {
@@ -590,7 +592,10 @@ function App() {
     <div className="dashboard-layout">
       {/* Sidebar Navigation */}
       <aside className="sidebar">
-        <div className="sidebar-brand" style={{ cursor: 'pointer' }} onClick={() => setView('home')}>⚡ AI Advisor</div>
+        <div className="sidebar-brand" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', background: 'none', WebkitTextFillColor: 'initial', color: 'var(--text-primary)', marginBottom: '2rem', width: '100%' }} onClick={() => setView('home')}>
+          <img src={logoImg} alt="AI Advisor Logo" style={{ height: '80px', width: 'auto', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', background: '#F8F6F0', padding: '4px' }} />
+          <span style={{ fontSize: '1.25rem', fontWeight: '800', background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }}>AI Advisor</span>
+        </div>
         <nav className="sidebar-menu">
           <button 
             className={`sidebar-link ${activeTab === 'overview' ? 'active' : ''}`}
@@ -799,8 +804,9 @@ const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick }) => 
       }}
     >
       <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); setView('home'); }}>
-          ⚡ AI Advisor
+        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); setView('home'); }} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <img src={logoImg} alt="AI Advisor Logo" style={{ height: '32px', width: 'auto', borderRadius: '4px', background: '#F8F6F0', padding: '2px' }} />
+          <span>AI Advisor</span>
         </a>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
