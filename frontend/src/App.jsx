@@ -388,6 +388,7 @@ function App() {
   const [compareSet, setCompareSet] = useState(new Set());
   const [isModalActive, setIsModalActive] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   // Fetch datasets from backend on load
   useEffect(() => {
@@ -431,6 +432,8 @@ function App() {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setIsModalActive(false);
+        setIsSignUpOpen(false);
+        setIsDemoOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -479,7 +482,7 @@ function App() {
               <div className="hero-centered-cta" style={{ display: 'flex', flexDirection: 'row', gap: '1rem', justifyContent: 'center', marginTop: '0' }}>
                 <button 
                   className="btn btn-secondary btn-lg" 
-                  onClick={() => handleRouteToDashboard('database')}
+                  onClick={() => setIsDemoOpen(true)}
                   style={{ padding: '1rem 2rem', borderRadius: '8px', fontWeight: 700, border: '2px solid rgba(255, 255, 255, 0.15)', background: 'transparent', color: 'var(--text-primary)' }}
                 >
                   Request a Demo
@@ -580,6 +583,11 @@ function App() {
           isOpen={isSignUpOpen} 
           onClose={() => setIsSignUpOpen(false)} 
           onSuccess={() => handleRouteToDashboard('overview')} 
+          showToast={showToast} 
+        />
+        <RequestDemoModal 
+          isOpen={isDemoOpen} 
+          onClose={() => setIsDemoOpen(false)} 
           showToast={showToast} 
         />
         <ToastContainer toasts={toasts} />
@@ -769,6 +777,11 @@ function App() {
         isOpen={isSignUpOpen} 
         onClose={() => setIsSignUpOpen(false)} 
         onSuccess={() => handleRouteToDashboard('overview')} 
+        showToast={showToast} 
+      />
+      <RequestDemoModal 
+        isOpen={isDemoOpen} 
+        onClose={() => setIsDemoOpen(false)} 
         showToast={showToast} 
       />
       <ToastContainer toasts={toasts} />
@@ -2011,6 +2024,99 @@ const SignUpModal = ({ isOpen, onClose, onSuccess, showToast }) => {
 
           <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '0.5rem', padding: '0.8rem' }}>
             Get Started Free
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: REQUEST A DEMO MODAL
+   ======================================================================== */
+const RequestDemoModal = ({ isOpen, onClose, showToast }) => {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    company: '',
+    useCase: ''
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.company) {
+      showToast("Please fill in all required fields.", "error");
+      return;
+    }
+    showToast(`⚡ Thank you, ${formData.name}! Your demo request has been received. Our team will contact you shortly.`, "success");
+    onClose();
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px', padding: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }} className="gradient-text">Request a Demo</h2>
+          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', padding: '0.25rem 0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
+        </div>
+        
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+          Get a personalized walk-through of AI Advisor with one of our enterprise AI specialists.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Full Name</label>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="Alex Carter"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Work Email</label>
+            <input 
+              type="email" 
+              className="form-control" 
+              placeholder="alex@company.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Company Name</label>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="Acme Corp"
+              value={formData.company}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Describe Your Use Case (Optional)</label>
+            <textarea 
+              className="form-control" 
+              placeholder="We are building customer support agents..."
+              value={formData.useCase}
+              onChange={(e) => setFormData({ ...formData, useCase: e.target.value })}
+              rows="3"
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '0.6rem', borderRadius: '6px', width: '100%', resize: 'vertical', fontFamily: 'inherit' }}
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '0.5rem', padding: '0.8rem' }}>
+            Submit Request
           </button>
         </form>
       </div>
