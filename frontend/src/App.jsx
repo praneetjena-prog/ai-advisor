@@ -938,6 +938,21 @@ const AdvisorWizard = ({ models, agents, showToast }) => {
 
   const calculateRecommendation = () => {
     const { domain, complexity, autonomy, budget } = answers;
+
+    if (!models || models.length === 0) {
+      showToast('Model database is not loaded yet. Please wait a moment.', 'warning');
+      return;
+    }
+
+    const domainKeywords = {
+      'coding': ['coding', 'code', 'dev', 'developer', 'debugging', 'software', 'programming'],
+      'research': ['research', 'analysis', 'scientific', 'mathematical', 'reasoning', 'puzzles'],
+      'data-processing': ['data', 'pipeline', 'parsing', 'analytics', 'extraction', 'document', 'etl'],
+      'content-creation': ['content', 'creative', 'writing', 'copywriting', 'blogs', 'conversational', 'chat'],
+      'customer-support': ['support', 'chat', 'chatbot', 'assistant', 'conversational', 'orchestrations']
+    };
+
+    const keywords = domainKeywords[domain] || [domain];
     const tierOrder = ['free', 'low', 'medium', 'high', 'enterprise'];
 
     // Score Models
@@ -945,12 +960,14 @@ const AdvisorWizard = ({ models, agents, showToast }) => {
       let score = 0;
       if (Array.isArray(model.bestFor)) {
         model.bestFor.forEach(bf => {
-          if (bf.toLowerCase().includes(domain.toLowerCase())) score += 3;
+          keywords.forEach(kw => {
+            if (bf.toLowerCase().includes(kw.toLowerCase())) score += 3;
+          });
         });
       }
       
       const budgetIdx = tierOrder.indexOf(budget);
-      const tierIdx = tierOrder.indexOf(model.tier);
+      const tierIdx = tierOrder.indexOf(model.tier || 'low');
       if (budgetIdx !== -1 && tierIdx !== -1) {
         if (budgetIdx === tierIdx) score += 5;
         else if (Math.abs(budgetIdx - tierIdx) === 1) score += 2;
@@ -964,12 +981,14 @@ const AdvisorWizard = ({ models, agents, showToast }) => {
 
     // Score Agents
     let recommendedAgent = null;
-    if (autonomy !== 'single-llm') {
+    if (autonomy !== 'single-llm' && agents && agents.length > 0) {
       const scoredAgents = agents.map(agent => {
         let score = 0;
         if (Array.isArray(agent.bestFor)) {
           agent.bestFor.forEach(bf => {
-            if (bf.toLowerCase().includes(domain.toLowerCase())) score += 3;
+            keywords.forEach(kw => {
+              if (bf.toLowerCase().includes(kw.toLowerCase())) score += 3;
+            });
           });
         }
         if (complexity === 'complex' && agent.complexity === 'advanced') score += 3;
@@ -989,12 +1008,12 @@ const AdvisorWizard = ({ models, agents, showToast }) => {
 
     // Generate rationale string
     let reasoning = `Based on your focus on ${domain} tasks with ${complexity} complexity, `;
-    reasoning += `a ${budget} budget, and preference for ${autonomy.replace(/-/g, ' ')} workflows, `;
+    reasoning += `a ${budget} budget, and preference for ${(autonomy || 'single-llm').replace(/-/g, ' ')} workflows, `;
     reasoning += `we recommend ${topModel.name} by ${topModel.provider}. `;
     reasoning += `It excels at ${(topModel.bestFor || []).slice(0, 3).join(', ')} `;
-    reasoning += `and offers ${topModel.speed} inference speed with ${topModel.pricing} pricing.`;
+    reasoning += `and offers ${topModel.speed || 'medium'} inference speed with ${topModel.pricing || 'standard'} pricing.`;
     if (recommendedAgent) {
-      reasoning += ` Paired with ${recommendedAgent.name}, you get a robust ${recommendedAgent.type} `;
+      reasoning += ` Paired with ${recommendedAgent.name}, you get a robust ${recommendedAgent.type || 'framework'} `;
       reasoning += `framework that handles ${(recommendedAgent.bestFor || []).slice(0, 2).join(' and ')}.`;
     }
 
