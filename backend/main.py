@@ -112,15 +112,15 @@ Based on your prompt ("*{prompt}*"), here is the structured solution:
 
 ```javascript
 // {m_name} Precise Tool-Use & Implementation Pattern
-async function executeClaudeWorkflow(inputPrompt) {
+async function executeClaudeWorkflow(inputPrompt) {{
   // Adaptive thinking verified input parameters
-  const response = {
+  const response = {{
     model: "{m_name}",
     safetyGuardrails: "enforced",
-    output: `Executing task: ${inputPrompt}`
-  };
+    output: "Executing task: " + inputPrompt
+  }};
   return response;
-}
+}}
 ```
 
 #### Key Architectural Strengths ({m_name})
