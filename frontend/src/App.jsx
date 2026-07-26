@@ -418,6 +418,2096 @@ const FALLBACK_DATA = {
   }
 };
 
+/* ========================================================================
+   SUB-COMPONENT: GOOGLE ICON SVG
+   ======================================================================== */
+const GoogleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.259h2.908c1.702-1.567 2.684-3.874 2.684-6.617z"/>
+    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+  </svg>
+);
+
+/* ========================================================================
+   SUB-COMPONENT: GOOGLE ACCOUNT NAV WIDGET (YOUTUBE / GOOGLE STYLE)
+   ======================================================================== */
+function GoogleAccountNavWidget({ userAccount, setUserAccount, onOpenSignUp, showToast, handleRouteToDashboard, setView }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [showOneTap, setShowOneTap] = useState(() => !userAccount);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleGoogleConnect = (name = "Alex Carter", email = "alex.carter@gmail.com") => {
+    const account = {
+      name,
+      email,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      provider: "google",
+      connectedAt: new Date().toLocaleDateString()
+    };
+    setUserAccount(account);
+    try {
+      localStorage.setItem('ai_advisor_user', JSON.stringify(account));
+    } catch (e) {}
+    setShowOneTap(false);
+    setShowMenu(false);
+    showToast(`⚡ Signed in with Google as ${account.name}`, 'success');
+    if (handleRouteToDashboard) {
+      handleRouteToDashboard('overview');
+    }
+  };
+
+  const handleSignOut = () => {
+    setUserAccount(null);
+    try {
+      localStorage.removeItem('ai_advisor_user');
+    } catch (e) {}
+    setShowMenu(false);
+    setShowOneTap(true);
+    showToast('Signed out of Google account.', 'info');
+  };
+
+  return (
+    <div style={{ position: 'relative' }} ref={menuRef}>
+      {userAccount ? (
+        // SIGNED IN: GOOGLE PROFILE BADGE
+        <button 
+          onClick={() => setShowMenu(!showMenu)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '30px',
+            padding: '0.25rem 0.75rem 0.25rem 0.3rem',
+            color: '#fff',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <div style={{ position: 'relative' }}>
+            <img 
+              src={userAccount.avatar} 
+              alt={userAccount.name} 
+              style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #4285F4' }}
+            />
+            <span style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '8px', height: '8px', background: '#34A853', borderRadius: '50%', border: '1px solid #000' }}></span>
+          </div>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{userAccount.name.split(' ')[0]}</span>
+          <GoogleIcon />
+        </button>
+      ) : (
+        // NOT SIGNED IN: GOOGLE SIGN IN BUTTON
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button 
+            onClick={onOpenSignUp}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: '#ffffff',
+              color: '#1f2937',
+              border: '1px solid #dadce0',
+              borderRadius: '20px',
+              padding: '0.4rem 1rem',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            }}
+          >
+            <GoogleIcon />
+            <span>Sign in with Google</span>
+          </button>
+        </div>
+      )}
+
+      {/* FLOATING ONE-TAP POPOVER (WHEN NOT SIGNED IN) */}
+      {!userAccount && showOneTap && (
+        <div 
+          className="fade-in"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 12px)',
+            right: 0,
+            width: '300px',
+            background: '#ffffff',
+            color: '#202124',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+            padding: '1.25rem',
+            zIndex: 9999,
+            border: '1px solid #e5e7eb'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <GoogleIcon />
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5f6368' }}>Google One-Tap</span>
+            </div>
+            <button onClick={() => setShowOneTap(false)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer', fontSize: '1rem' }}>✕</button>
+          </div>
+
+          <p style={{ fontSize: '0.85rem', color: '#3c4043', margin: '0 0 1rem 0', lineHeight: 1.4 }}>
+            Sign in to <strong>AI Advisor</strong> with your Google Account
+          </p>
+
+          <div 
+            onClick={() => handleGoogleConnect()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.6rem 0.75rem',
+              background: '#f8f9fa',
+              border: '1px solid #dadce0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'background 0.2s ease'
+            }}
+          >
+            <img 
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" 
+              alt="Alex Carter" 
+              style={{ width: '36px', height: '36px', borderRadius: '50%' }}
+            />
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#202124' }}>Alex Carter</div>
+              <div style={{ fontSize: '0.75rem', color: '#5f6368', textOverflow: 'ellipsis', overflow: 'hidden' }}>alex.carter@gmail.com</div>
+            </div>
+          </div>
+
+          <button 
+            onClick={() => handleGoogleConnect()}
+            style={{
+              width: '100%',
+              marginTop: '0.85rem',
+              background: '#1a73e8',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '0.5rem',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Continue as Alex
+          </button>
+        </div>
+      )}
+
+      {/* YOUTUBE / GOOGLE-STYLE ACCOUNT DROPDOWN CARD (WHEN SIGNED IN) */}
+      {userAccount && showMenu && (
+        <div 
+          className="fade-in"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 12px)',
+            right: 0,
+            width: '310px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '16px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+            padding: '1.25rem',
+            zIndex: 9999,
+            backdropFilter: 'blur(20px)'
+          }}
+        >
+          {/* User Info Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', paddingBottom: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
+            <img 
+              src={userAccount.avatar} 
+              alt={userAccount.name} 
+              style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #4285F4' }}
+            />
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{userAccount.name}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden' }}>{userAccount.email}</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.3rem', fontSize: '0.7rem', color: '#34A853', background: 'rgba(52, 168, 83, 0.1)', padding: '0.15rem 0.5rem', borderRadius: '10px' }}>
+                <GoogleIcon /> Google Account Verified
+              </div>
+            </div>
+          </div>
+
+          {/* Account Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+            <button 
+              onClick={() => { setShowMenu(false); if (handleRouteToDashboard) handleRouteToDashboard('overview'); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: '#fff', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem' }}
+            >
+              🚀 Workspace Dashboard
+            </button>
+            <button 
+              onClick={() => handleGoogleConnect("Jordan Smith", "jordan.smith@gmail.com")}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: 'var(--text-secondary)', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem' }}
+            >
+              🔄 Switch Account
+            </button>
+            <button 
+              onClick={handleSignOut}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: 'var(--color-danger)', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', borderTop: '1px solid var(--glass-border)', marginTop: '0.25rem', paddingTop: '0.75rem' }}
+            >
+              🚪 Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: HEADER
+   ======================================================================== */
+function Header({ view, setView, setActiveTab, handleRoute, onSignUpClick, userAccount, setUserAccount, showToast }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <nav 
+      id="main-nav" 
+      style={{
+        background: scrolled ? 'rgba(10, 14, 26, 0.95)' : 'rgba(10, 14, 26, 0.8)',
+        boxShadow: scrolled ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
+      }}
+    >
+      <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); setView('home'); }} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <img src={logoImg} alt="AI Advisor Logo" style={{ height: '32px', width: 'auto', borderRadius: '4px', background: '#F8F6F0', padding: '2px' }} />
+          <span>AI Advisor</span>
+        </a>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button 
+            className="btn btn-secondary btn-sm" 
+            onClick={() => handleRoute('overview')}
+            style={{ borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.85rem' }}
+          >
+            Launch Workspace
+          </button>
+
+          <GoogleAccountNavWidget 
+            userAccount={userAccount} 
+            setUserAccount={setUserAccount} 
+            onOpenSignUp={onSignUpClick} 
+            showToast={showToast} 
+            handleRouteToDashboard={handleRoute} 
+            setView={setView} 
+          />
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: HERO
+   ======================================================================== */
+function Hero() {
+  const handleStart = () => {
+    const el = document.getElementById('section-advisor');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleExplore = () => {
+    const el = document.getElementById('section-database');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <section id="section-hero" className="section section-hero">
+      <div className="hero-content">
+        <div className="hero-badge">🚀 AI-Powered Recommendations</div>
+        <h1 className="hero-title">Find the <span className="gradient-text">Perfect AI</span> for Your Project</h1>
+        <p className="hero-description text-center">
+          Stop guessing which AI model or agent to use. Get personalized recommendations, implementation playbooks, and error-free code templates — all in one place.
+        </p>
+        <div className="hero-cta">
+          <button className="btn btn-primary btn-lg" onClick={handleStart}>🎯 Get Recommendations</button>
+          <button className="btn btn-secondary btn-lg" onClick={handleExplore}>📊 Explore Database</button>
+        </div>
+        <div className="hero-stats">
+          <div className="hero-stat">
+            <span className="hero-stat-number">12+</span>
+            <span className="hero-stat-label">Models Compared</span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-number">9+</span>
+            <span className="hero-stat-label">Agent Frameworks</span>
+          </div>
+          <div className="hero-stat">
+            <span className="hero-stat-number">5</span>
+            <span className="hero-stat-label">Implementation Playbooks</span>
+          </div>
+        </div>
+      </div>
+      <div className="hero-orb hero-orb-1"></div>
+      <div className="hero-orb hero-orb-2"></div>
+    </section>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: ADVISOR WIZARD
+   ======================================================================== */
+function AdvisorWizard({ models, agents, showToast }) {
+  const [step, setStep] = useState(1);
+  const [answers, setAnswers] = useState({
+    domain: '',
+    complexity: '',
+    autonomy: '',
+    budget: ''
+  });
+  const [results, setResults] = useState(null);
+
+  const STEP_KEYS = { 1: 'domain', 2: 'complexity', 3: 'autonomy', 4: 'budget' };
+
+  const handleSelectOption = (key, value) => {
+    setAnswers(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleNext = () => {
+    const currentKey = STEP_KEYS[step];
+    if (currentKey && !answers[currentKey]) {
+      showToast('Please select an option before continuing.', 'warning');
+      return;
+    }
+    
+    const nextStep = step + 1;
+    setStep(nextStep);
+    if (nextStep > 4) {
+      calculateRecommendation();
+    }
+  };
+
+  const handlePrev = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+  const handleRestart = () => {
+    setStep(1);
+    setAnswers({ domain: '', complexity: '', autonomy: '', budget: '' });
+    setResults(null);
+  };
+
+  const calculateRecommendation = () => {
+    const { domain, complexity, autonomy, budget } = answers;
+
+    if (!models || models.length === 0) {
+      showToast('Model database is not loaded yet. Please wait a moment.', 'warning');
+      return;
+    }
+
+    const domainKeywords = {
+      'coding': ['coding', 'code', 'dev', 'developer', 'debugging', 'software', 'programming'],
+      'research': ['research', 'analysis', 'scientific', 'mathematical', 'reasoning', 'puzzles'],
+      'data-processing': ['data', 'pipeline', 'parsing', 'analytics', 'extraction', 'document', 'etl'],
+      'content-creation': ['content', 'creative', 'writing', 'copywriting', 'blogs', 'conversational', 'chat'],
+      'customer-support': ['support', 'chat', 'chatbot', 'assistant', 'conversational', 'orchestrations']
+    };
+
+    const keywords = domainKeywords[domain] || [domain];
+    const tierOrder = ['free', 'low', 'medium', 'high', 'enterprise'];
+
+    // Score Models
+    const scoredModels = models.map(model => {
+      let score = 0;
+      if (Array.isArray(model.bestFor)) {
+        model.bestFor.forEach(bf => {
+          keywords.forEach(kw => {
+            if (bf.toLowerCase().includes(kw.toLowerCase())) score += 3;
+          });
+        });
+      }
+      
+      const budgetIdx = tierOrder.indexOf(budget);
+      const tierIdx = tierOrder.indexOf(model.tier || 'low');
+      if (budgetIdx !== -1 && tierIdx !== -1) {
+        if (budgetIdx === tierIdx) score += 5;
+        else if (Math.abs(budgetIdx - tierIdx) === 1) score += 2;
+      }
+
+      if (complexity === 'simple' && model.speed === 'fast') score += 3;
+      if (complexity === 'complex' && (model.speed === 'medium' || model.speed === 'slow')) score += 2;
+
+      return { ...model, score };
+    }).sort((a, b) => b.score - a.score);
+
+    // Score Agents
+    let recommendedAgent = null;
+    if (autonomy !== 'single-llm' && agents && agents.length > 0) {
+      const scoredAgents = agents.map(agent => {
+        let score = 0;
+        if (Array.isArray(agent.bestFor)) {
+          agent.bestFor.forEach(bf => {
+            keywords.forEach(kw => {
+              if (bf.toLowerCase().includes(kw.toLowerCase())) score += 3;
+            });
+          });
+        }
+        if (complexity === 'complex' && agent.complexity === 'advanced') score += 3;
+        if (complexity === 'simple' && agent.complexity === 'beginner') score += 2;
+        if (autonomy === 'autonomous-agent' && agent.complexity === 'advanced') score += 3;
+        if (autonomy === 'human-in-loop') {
+          const hasHIL = (agent.features || []).some(f => /human.in.loop/i.test(f));
+          if (hasHIL) score += 4;
+        }
+        return { ...agent, score };
+      }).sort((a, b) => b.score - a.score);
+
+      recommendedAgent = scoredAgents[0] || null;
+    }
+
+    const topModel = scoredModels[0] || models[0];
+
+    // Generate rationale string
+    let reasoning = `Based on your focus on ${domain} tasks with ${complexity} complexity, `;
+    reasoning += `a ${budget} budget, and preference for ${(autonomy || 'single-llm').replace(/-/g, ' ')} workflows, `;
+    reasoning += `we recommend ${topModel.name} by ${topModel.provider}. `;
+    reasoning += `It excels at ${(topModel.bestFor || []).slice(0, 3).join(', ')} `;
+    reasoning += `and offers ${topModel.speed || 'medium'} inference speed with ${topModel.pricing || 'standard'} pricing.`;
+    if (recommendedAgent) {
+      reasoning += ` Paired with ${recommendedAgent.name}, you get a robust ${recommendedAgent.type || 'framework'} `;
+      reasoning += `framework that handles ${(recommendedAgent.bestFor || []).slice(0, 2).join(' and ')}.`;
+    }
+
+    // Generate tips
+    const tips = [
+      `Start with ${topModel.name}'s default parameters, then fine-tune temperature for your ${domain} use case.`,
+      `Use structured output (JSON mode) for reliable parsing in production pipelines.`,
+      `Implement exponential back-off retry logic to handle rate limits gracefully.`
+    ];
+
+    if (recommendedAgent) {
+      tips.push(`Integrate ${recommendedAgent.name} incrementally — begin with a single-agent setup before scaling to multi-agent.`);
+      tips.push(`Add logging and observability early to debug agent decision chains.`);
+    }
+
+    setResults({ model: topModel, agent: recommendedAgent, reasoning, tips });
+  };
+
+  const progressPct = step <= 4 ? (step / 4) * 100 : 100;
+
+  return (
+    <section id="section-advisor" className="section section-advisor">
+      <h2 className="section-title"><span className="gradient-text">Smart Advisor</span> Wizard</h2>
+      <p className="section-subtitle">Answer 4 simple questions and get a personalized AI recommendation tailored to your project needs.</p>
+
+      <div className="wizard-container glass-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="wizard-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
+          <span className="wizard-step-indicator" style={{ fontWeight: '600' }}>
+            {step <= 4 ? `Step ${step} of 4` : 'Results'}
+          </span>
+          {step > 4 && (
+            <button className="btn btn-ghost btn-sm" onClick={handleRestart}>↺ Restart</button>
+          )}
+        </div>
+
+        <div className="wizard-progress" style={{ width: '100%', height: '6px', background: 'var(--bg-surface)', borderRadius: '3px', marginBottom: '2.5rem', overflow: 'hidden' }}>
+          <div className="wizard-progress-fill" style={{ width: `${progressPct}%`, height: '100%', background: 'var(--gradient-primary)', transition: 'width 0.3s ease' }}></div>
+        </div>
+
+        {/* STEP 1: Task Domain */}
+        {step === 1 && (
+          <div className="wizard-step">
+            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>What type of project are you building?</h3>
+            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Select the primary domain of your AI-powered project.</p>
+            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              {[
+                { val: 'coding', icon: '💻', title: 'Coding & Dev', desc: 'Build, debug, or refactor code' },
+                { val: 'research', icon: '🔍', title: 'Research & Analysis', desc: 'Deep research, summaries' },
+                { val: 'data-processing', icon: '📊', title: 'Data Processing', desc: 'Pipelines, analytics, ETL' },
+                { val: 'content-creation', icon: '✍️', title: 'Content Creation', desc: 'Blogs, copywriting, marketing' },
+                { val: 'customer-support', icon: '🎧', title: 'Customer Support', desc: 'Chatbots and support automation' }
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  className={`wizard-option ${answers.domain === opt.val ? 'selected' : ''}`}
+                  onClick={() => handleSelectOption('domain', opt.val)}
+                  style={{
+                    background: answers.domain === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
+                    border: answers.domain === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
+                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
+                  }}
+                >
+                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
+                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
+                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Complexity */}
+        {step === 2 && (
+          <div className="wizard-step">
+            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>How complex is your project?</h3>
+            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>This helps us recommend the right level of AI capability.</p>
+            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              {[
+                { val: 'simple', icon: '🟢', title: 'Simple', desc: 'Single task, straightforward inputs/outputs' },
+                { val: 'moderate', icon: '🟡', title: 'Moderate', desc: 'Multi-step chains, simple tool integration' },
+                { val: 'complex', icon: '🔴', title: 'Complex', desc: 'Agentic loops, custom tools, self-correction' }
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  className={`wizard-option ${answers.complexity === opt.val ? 'selected' : ''}`}
+                  onClick={() => handleSelectOption('complexity', opt.val)}
+                  style={{
+                    background: answers.complexity === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
+                    border: answers.complexity === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
+                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
+                  }}
+                >
+                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
+                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
+                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Autonomy */}
+        {step === 3 && (
+          <div className="wizard-step">
+            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>How autonomous should the AI be?</h3>
+            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Choose between direct models or collaborative frameworks.</p>
+            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              {[
+                { val: 'autonomous-agent', icon: '🤖', title: 'Fully Autonomous', desc: 'AI plans, executes and corrects independently' },
+                { val: 'human-in-loop', icon: '🤝', title: 'Human-in-the-Loop', desc: 'AI proposes, human signs off before execution' },
+                { val: 'single-llm', icon: '💬', title: 'Single LLM (No Agent)', desc: 'Direct prompt engineering response' }
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  className={`wizard-option ${answers.autonomy === opt.val ? 'selected' : ''}`}
+                  onClick={() => handleSelectOption('autonomy', opt.val)}
+                  style={{
+                    background: answers.autonomy === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
+                    border: answers.autonomy === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
+                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
+                  }}
+                >
+                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
+                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
+                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: Budget */}
+        {step === 4 && (
+          <div className="wizard-step">
+            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>What's your budget tier?</h3>
+            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Select optimal API costing constraints.</p>
+            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              {[
+                { val: 'free', icon: '🆓', title: 'Free / Open Source', desc: 'Self-hosted or free trial APIs' },
+                { val: 'low', icon: '💰', title: 'Low ($0 - $50/mo)', desc: 'Affordable developer APIs' },
+                { val: 'medium', icon: '💎', title: 'Medium ($50 - $200/mo)', desc: 'Balanced cost and performance' },
+                { val: 'high', icon: '🏆', title: 'High ($200+/mo)', desc: 'Enterprise power, unconstrained' }
+              ].map(opt => (
+                <button
+                  key={opt.val}
+                  className={`wizard-option ${answers.budget === opt.val ? 'selected' : ''}`}
+                  onClick={() => handleSelectOption('budget', opt.val)}
+                  style={{
+                    background: answers.budget === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
+                    border: answers.budget === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
+                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
+                  }}
+                >
+                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
+                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
+                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5: Results */}
+        {step > 4 && results && (
+          <div className="wizard-step fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '800', textAlign: 'center', marginBottom: '0.5rem' }}>Your Recommended Setup</h3>
+            
+            <div className="result-card glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: '4px solid var(--color-primary)' }}>
+              <div className="result-header" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '2.5rem' }}>{results.model.icon}</span>
+                <div>
+                  <h4 style={{ fontSize: '1.25rem', fontWeight: '700' }}>{results.model.name}</h4>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Provider: {results.model.provider}</span>
+                </div>
+              </div>
+              <p style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>{results.reasoning}</p>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                <span className="tag tag--violet">Context: {results.model.contextWindow}</span>
+                <span className="tag tag--pink">Speed: {results.model.speed}</span>
+                <span className="tag tag--cyan">Pricing: {results.model.pricing}</span>
+              </div>
+            </div>
+
+            {results.agent && (
+              <div className="result-card glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: '4px solid var(--color-accent)' }}>
+                <div className="result-header" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <span style={{ fontSize: '2.5rem' }}>{results.agent.icon}</span>
+                  <div>
+                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700' }}>{results.agent.name}</h4>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Type: {results.agent.type}</span>
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>{results.agent.description}</p>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                  <span className="tag tag--cyan">Complexity: {results.agent.complexity}</span>
+                  <span className="tag tag--pink">Open Source: {results.agent.openSource ? 'Yes' : 'No'}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="result-card glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="result-header" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '1.5rem' }}>🚀</span>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: '700' }}>Next Steps & Implementation Tips</h4>
+              </div>
+              <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
+                {results.tips.map((tip, idx) => (
+                  <li key={idx} style={{ color: 'var(--text-secondary)', lineHeight: '1.4' }}>{tip}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        <div className="wizard-nav" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2.5rem' }}>
+          {step > 1 && step <= 4 && (
+            <button className="btn btn-secondary" onClick={handlePrev}>← Previous</button>
+          )}
+          {step <= 4 ? (
+            <button className="btn btn-primary" style={{ marginLeft: 'auto' }} onClick={handleNext}>Next →</button>
+          ) : (
+            <button className="btn btn-primary" style={{ margin: '0 auto' }} onClick={handleRestart}>↺ Try Again</button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: DATABASE
+   ======================================================================== */
+function ModelDatabase({ models, agents, compareSet, setCompareSet, isModalActive, setIsModalActive, showToast }) {
+  const [filter, setFilter] = useState('all');
+  const [query, setQuery] = useState('');
+  const [testingModel, setTestingModel] = useState(null);
+
+  const dbItems = useMemo(() => {
+    const list = [
+      ...models.map(m => ({ ...m, _type: 'model' })),
+      ...agents.map(a => ({ ...a, _type: 'agent' }))
+    ];
+    return list.filter(item => {
+      if (filter !== 'all' && item._type !== filter) return false;
+      if (query.trim() !== '') {
+        const q = query.toLowerCase();
+        const searchPool = [
+          item.name,
+          item.provider || '',
+          item.type || '',
+          item.description || '',
+          ...(item.bestFor || [])
+        ].join(' ').toLowerCase();
+        return searchPool.includes(q);
+      }
+      return true;
+    });
+  }, [models, agents, filter, query]);
+
+  const handleCheckboxChange = (type, id, checked) => {
+    const key = `${type}:${id}`;
+    setCompareSet(prev => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(key);
+      } else {
+        next.delete(key);
+      }
+      return next;
+    });
+  };
+
+  const handleOpenCompare = () => {
+    if (compareSet.size < 2) {
+      showToast('Select at least 2 items to compare.', 'warning');
+      return;
+    }
+    setIsModalActive(true);
+  };
+
+  const compareItemsList = useMemo(() => {
+    return [...compareSet].map(key => {
+      const [type, id] = key.split(':');
+      if (type === 'model') {
+        return { ...models.find(m => m.id === id), _type: 'model' };
+      } else {
+        return { ...agents.find(a => a.id === id), _type: 'agent' };
+      }
+    }).filter(i => i.id !== undefined);
+  }, [compareSet, models, agents]);
+
+  return (
+    <section id="section-database" className="section section-database">
+      <h2 className="section-title"><span className="gradient-text">AI Model & Agent</span> Database</h2>
+      <p className="section-subtitle">Explore and compare the leading AI models and agent frameworks.</p>
+
+      <div className="db-controls" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+        <div className="search-wrapper" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '0.2rem 1rem', minWidth: '280px' }}>
+          <span className="search-icon" style={{ marginRight: '0.5rem' }}>🔍</span>
+          <input 
+            type="text" 
+            placeholder="Search models and agents..." 
+            className="pb-input"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ background: 'none', border: 'none', color: '#fff', outline: 'none', padding: '0.6rem 0', width: '100%' }}
+          />
+        </div>
+        <div className="db-filters">
+          <button className={`db-filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>All</button>
+          <button className={`db-filter-btn ${filter === 'model' ? 'active' : ''}`} onClick={() => setFilter('model')}>Models</button>
+          <button className={`db-filter-btn ${filter === 'agent' ? 'active' : ''}`} onClick={() => setFilter('agent')}>Agents</button>
+        </div>
+      </div>
+
+      <div id="db-grid">
+        {dbItems.map(item => {
+          const isModel = item._type === 'model';
+          const tagColor = isModel ? 'violet' : 'cyan';
+          const isChecked = compareSet.has(`${item._type}:${item.id}`);
+
+          return (
+            <div key={`${item._type}-${item.id}`} className="model-card glass-card fade-in">
+              <div className="model-card-header">
+                <div>
+                  <div className="model-card-name" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span>{item.icon}</span> {item.name}
+                  </div>
+                  <div className="model-card-provider">{item.provider || item.type}</div>
+                </div>
+                <span className={`tag tag--${tagColor}`}>{isModel ? 'Model' : 'Agent'}</span>
+              </div>
+              <p className="model-card-desc">{item.description}</p>
+              <div className="model-card-tags">
+                {(item.bestFor || []).map((b, i) => (
+                  <span key={i} className="tag tag--pink">{b}</span>
+                ))}
+              </div>
+              
+              <div className="model-card-stats" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '1rem', marginTop: '1rem' }}>
+                {isModel ? (
+                  <>
+                    <div>
+                      <span className="stat-label">Context</span>
+                      <div className="stat-value">{item.contextWindow}</div>
+                    </div>
+                    <div>
+                      <span className="stat-label">Speed</span>
+                      <div className="stat-value" style={{ textTransform: 'capitalize' }}>{item.speed}</div>
+                    </div>
+                    <div>
+                      <span className="stat-label">Pricing</span>
+                      <div className="stat-value" style={{ fontSize: '0.75rem', wordBreak: 'break-word' }}>{item.pricing}</div>
+                    </div>
+                    <div>
+                      <span className="stat-label">Tier</span>
+                      <div className="stat-value" style={{ textTransform: 'capitalize' }}>{item.tier}</div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <span className="stat-label">Complexity</span>
+                      <div className="stat-value" style={{ textTransform: 'capitalize' }}>{item.complexity}</div>
+                    </div>
+                    <div>
+                      <span className="stat-label">Languages</span>
+                      <div className="stat-value">{item.languages?.join(', ') || '—'}</div>
+                    </div>
+                    <div>
+                      <span className="stat-label">License</span>
+                      <div className="stat-value">{item.openSource ? 'Open Source' : 'Proprietary'}</div>
+                    </div>
+                    <div>
+                      <span className="stat-label">GitHub</span>
+                      <div className="stat-value">
+                        {item.link ? (
+                          <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem' }}>View Source</a>
+                        ) : '—'}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="model-card-footer" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '1rem', paddingTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    id={`compare-${item._type}-${item.id}`}
+                    className="compare-checkbox" 
+                    checked={isChecked}
+                    onChange={(e) => handleCheckboxChange(item._type, item.id, e.target.checked)}
+                  />
+                  <label htmlFor={`compare-${item._type}-${item.id}`} className="compare-label">
+                    Compare
+                  </label>
+                </div>
+
+                {isModel && (
+                  <button 
+                    className="btn btn-secondary btn-sm" 
+                    onClick={() => setTestingModel(item)}
+                    style={{ padding: '0.3rem 0.75rem', fontSize: '0.75rem', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  >
+                    ⚡ Test Response
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* FLOATING COMPARE BUTTON */}
+      <button 
+        id="compare-btn" 
+        className={`btn btn-primary ${compareSet.size >= 2 ? 'visible' : ''}`}
+        onClick={handleOpenCompare}
+      >
+        Compare <span className="compare-count">{compareSet.size}</span>
+      </button>
+
+      {/* MODEL RESPONSE PLAYGROUND MODAL */}
+      {testingModel && (
+        <ModelTestModal model={testingModel} onClose={() => setTestingModel(null)} showToast={showToast} />
+      )}
+
+      {/* COMPARISON MODAL */}
+      {isModalActive && (
+        <div className="modal-overlay active" onClick={() => setIsModalActive(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ background: '#0F1322', border: '1px solid var(--color-primary)', boxShadow: '0 8px 32px var(--color-primary-glow)' }}>
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ fontSize: '1.4rem', fontWeight: '700' }}>Model & Agent Comparison</h3>
+              <button className="modal-close" onClick={() => setIsModalActive(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ overflowX: 'auto', marginTop: '1rem' }}>
+              <table className="comparison-table" style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                    <th style={{ padding: '1rem', textAlign: 'left', background: 'rgba(255,255,255,0.02)', color: 'var(--text-dim)', width: '180px' }}>Attribute</th>
+                    {compareItemsList.map(item => (
+                      <th key={item.id} style={{ padding: '1rem', textAlign: 'left', fontWeight: '700' }}>
+                        {item.icon} {item.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { key: 'provider', label: 'Provider / Type', fn: i => i.provider || i.type || '—' },
+                    { key: 'desc', label: 'Description', fn: i => i.description || '—' },
+                    { key: 'ctx', label: 'Context Window', fn: i => i.contextWindow || '—' },
+                    { key: 'price', label: 'Pricing', fn: i => i.pricing || '—' },
+                    { key: 'speed', label: 'Speed', fn: i => i.speed || '—' },
+                    { key: 'best', label: 'Best For', fn: i => i.bestFor?.join(', ') || '—' },
+                    { key: 'strength', label: 'Strengths', fn: i => i.strengths?.join(', ') || '—' },
+                    { key: 'weak', label: 'Weaknesses', fn: i => i.weaknesses?.join(', ') || '—' },
+                    { key: 'complexity', label: 'Complexity', fn: i => i.complexity || '—' },
+                    { key: 'languages', label: 'Languages', fn: i => i.languages?.join(', ') || '—' },
+                    { key: 'open', label: 'Open Source', fn: i => i.openSource != null ? (i.openSource ? 'Yes' : 'No') : '—' },
+                    { key: 'features', label: 'Features', fn: i => i.features?.join(', ') || '—' }
+                  ].map((row, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                      <td style={{ padding: '0.85rem 1rem', background: 'rgba(255,255,255,0.01)', color: 'var(--text-secondary)', fontWeight: '600' }}>{row.label}</td>
+                      {compareItemsList.map(item => (
+                        <td key={item.id} style={{ padding: '0.85rem 1rem', color: '#e2e8f0', lineHeight: '1.4' }}>
+                          {row.fn(item)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: PLAYBOOKS
+   ======================================================================== */
+function PlaybookViewer({ playbooks, showToast }) {
+  const [activeCategory, setActiveCategory] = useState('coding');
+  
+  // Track selected programming language tab per playbook step index
+  const [stepLanguages, setStepLanguages] = useState({});
+
+  const currentPlaybook = playbooks[activeCategory];
+
+  const handleCopyCode = (stepIdx, codeText) => {
+    navigator.clipboard.writeText(codeText).then(() => {
+      showToast('Code copied to clipboard!', 'success');
+    }).catch(() => {
+      showToast('Could not copy code.', 'error');
+    });
+  };
+
+  const getStepLanguage = (stepIdx, stepObj) => {
+    if (stepLanguages[stepIdx]) return stepLanguages[stepIdx];
+    // Default to python if exists, else first available
+    if (stepObj.code?.python) return 'python';
+    if (stepObj.code?.javascript) return 'javascript';
+    return '';
+  };
+
+  const setStepLanguage = (stepIdx, lang) => {
+    setStepLanguages(prev => ({ ...prev, [stepIdx]: lang }));
+  };
+
+  return (
+    <section id="section-playbooks" className="section section-playbooks">
+      <h2 className="section-title"><span className="gradient-text">Implementation</span> Playbooks</h2>
+      <p className="section-subtitle">Step-by-step guides with working code to build AI agents that produce perfect, error-free outputs.</p>
+
+      <div className="playbook-categories" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+        {[
+          { key: 'coding', icon: '💻', title: 'Coding Agent' },
+          { key: 'research', icon: '🔍', title: 'Research Agent' },
+          { key: 'data', icon: '📊', title: 'Data Pipeline' },
+          { key: 'content', icon: '✍️', title: 'Content Agent' },
+          { key: 'support', icon: '🎧', title: 'Support Agent' }
+        ].map(cat => (
+          <button 
+            key={cat.key}
+            className={`playbook-category-btn ${activeCategory === cat.key ? 'active' : ''}`}
+            onClick={() => setActiveCategory(cat.key)}
+            style={{
+              background: activeCategory === cat.key ? 'var(--color-primary)' : 'rgba(26, 31, 53, 0.4)',
+              border: activeCategory === cat.key ? '1px solid var(--color-primary)' : '1px solid var(--glass-border)',
+              color: '#fff', padding: '0.6rem 1.2rem', borderRadius: '20px', cursor: 'pointer',
+              fontWeight: '600', transition: 'all 0.3s ease'
+            }}
+          >
+            {cat.icon} {cat.title}
+          </button>
+        ))}
+      </div>
+
+      <div id="playbook-content">
+        {!currentPlaybook ? (
+          <div className="glass-card fade-in" style={{ padding: '3rem', textAlign: 'center' }}>
+            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }}>🏗️</span>
+            <h4>Playbook Coming Soon!</h4>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>We are compiling code structures and error guardrails for this agent framework.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Header info */}
+            <div className="playbook-header glass-card fade-in" style={{ borderLeft: '4px solid var(--color-primary)' }}>
+              <h3 style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.5rem', marginBottom: '0.5rem' }}>{currentPlaybook.title}</h3>
+              <p style={{ color: 'var(--text-secondary)' }}>{currentPlaybook.description}</p>
+            </div>
+
+            {/* Steps */}
+            {currentPlaybook.steps.map((step, idx) => {
+              const selectedLang = getStepLanguage(idx, step);
+              const codeString = step.code?.[selectedLang] || '';
+              
+              return (
+                <div key={idx} className="playbook-step glass-card fade-in" style={{ position: 'relative' }}>
+                  <div className="step-badge" style={{
+                    position: 'absolute', top: '1.25rem', right: '1.25rem',
+                    background: 'rgba(139, 92, 246, 0.15)', color: 'var(--color-primary-light)',
+                    fontSize: '0.75rem', fontWeight: 'bold', padding: '0.2rem 0.6rem', borderRadius: '20px'
+                  }}>
+                    Step {idx + 1}
+                  </div>
+                  
+                  <h4 style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: '1.2rem', marginBottom: '0.5rem', paddingRight: '4rem' }}>{step.title}</h4>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1.25rem' }}>{step.description}</p>
+                  
+                  {step.code && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                      <div className="code-tabs" style={{ display: 'flex', gap: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.25rem' }}>
+                        {step.code.python && (
+                          <button 
+                            className={`code-tab ${selectedLang === 'python' ? 'active' : ''}`}
+                            onClick={() => setStepLanguage(idx, 'python')}
+                            style={{
+                              background: 'none', border: 'none', color: selectedLang === 'python' ? 'var(--color-primary-light)' : 'var(--text-dim)',
+                              fontWeight: '600', padding: '0.4rem 0.8rem', cursor: 'pointer', borderBottom: selectedLang === 'python' ? '2px solid var(--color-primary)' : 'none',
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            Python
+                          </button>
+                        )}
+                        {step.code.javascript && (
+                          <button 
+                            className={`code-tab ${selectedLang === 'javascript' ? 'active' : ''}`}
+                            onClick={() => setStepLanguage(idx, 'javascript')}
+                            style={{
+                              background: 'none', border: 'none', color: selectedLang === 'javascript' ? 'var(--color-primary-light)' : 'var(--text-dim)',
+                              fontWeight: '600', padding: '0.4rem 0.8rem', cursor: 'pointer', borderBottom: selectedLang === 'javascript' ? '2px solid var(--color-primary)' : 'none',
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            JavaScript
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div style={{ position: 'relative' }}>
+                        <pre className="code-block" style={{
+                          background: '#070A13', border: '1px solid var(--glass-border)',
+                          borderRadius: '8px', padding: '1.25rem', overflowX: 'auto',
+                          fontSize: '0.85rem', color: '#fff', fontFamily: 'Fira Code, monospace', lineHeight: '1.6'
+                        }}>
+                          <code>{codeString}</code>
+                        </pre>
+                        <button 
+                          className="copy-btn" 
+                          onClick={() => handleCopyCode(idx, codeString)}
+                          style={{
+                            position: 'absolute', top: '0.75rem', right: '0.75rem',
+                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '6px', color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
+                            fontSize: '0.75rem', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s'
+                          }}
+                        >
+                          📋 Copy
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pitfalls and Tips */}
+                  {step.pitfalls && step.pitfalls.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--color-danger)', letterSpacing: '0.05em' }}>⚠️ Common Pitfalls</span>
+                      <ul style={{ listStyle: 'none', paddingLeft: 0, marginTop: '0.3rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        {step.pitfalls.map((p, i) => <li key={i} style={{ marginBottom: '0.25rem', paddingLeft: '1rem', position: 'relative' }}><span style={{ position: 'absolute', left: 0, color: 'var(--color-danger)' }}>•</span> {p}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
+                  {step.tips && step.tips.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--color-success)', letterSpacing: '0.05em' }}>💡 Integration Tips</span>
+                      <ul style={{ listStyle: 'none', paddingLeft: 0, marginTop: '0.3rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        {step.tips.map((t, i) => <li key={i} style={{ marginBottom: '0.25rem', paddingLeft: '1rem', position: 'relative' }}><span style={{ position: 'absolute', left: 0, color: 'var(--color-success)' }}>•</span> {t}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Error prevention summary */}
+            {currentPlaybook.errorPrevention && (
+              <div className="playbook-card glass-card fade-in" style={{ borderLeft: '4px solid var(--color-danger)' }}>
+                <h4 style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: '1.2rem', marginBottom: '0.5rem' }}>🛡️ Error Prevention Guardrails</h4>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {currentPlaybook.errorPrevention.map((e, idx) => <li key={idx}>{e}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {/* Best practices summary */}
+            {currentPlaybook.bestPractices && (
+              <div className="playbook-card glass-card fade-in" style={{ borderLeft: '4px solid var(--color-success)' }}>
+                <h4 style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: '1.2rem', marginBottom: '0.5rem' }}>✅ Framework Best Practices</h4>
+                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {currentPlaybook.bestPractices.map((b, idx) => <li key={idx}>{b}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: PROMPT OPTIMIZER
+   ======================================================================== */
+function PromptOptimizer({ models, showToast }) {
+  const [task, setTask] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [complexity, setComplexity] = useState('moderate');
+  const [format, setFormat] = useState('system-prompt');
+  
+  const [output, setOutput] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [liveResponse, setLiveResponse] = useState(null);
+  const [isTestingLive, setIsTestingLive] = useState(false);
+
+  // Set default model once loaded
+  useEffect(() => {
+    if (models.length > 0 && !selectedModel) {
+      setSelectedModel(models[0].id);
+    }
+  }, [models]);
+
+  const handleGenerate = async () => {
+    if (!task.trim()) {
+      showToast('Please describe your task first.', 'warning');
+      return;
+    }
+
+    setIsGenerating(true);
+    setLiveResponse(null);
+    
+    try {
+      const res = await fetch('/api/optimize-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task,
+          model: selectedModel || 'gemini-35-pro',
+          complexity,
+          format
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setOutput(data.output);
+        showToast('Prompt generated successfully!', 'success');
+      } else {
+        throw new Error('API server returned error');
+      }
+    } catch (err) {
+      console.warn("API request failed, generating client-side mock prompt.");
+      // Fallback generator
+      const activeModelObj = models.find(m => m.id === selectedModel) || models[0];
+      let genText = '';
+      if (format === 'system-prompt' || format === 'full') {
+        genText += clientGenerateSystemPrompt(task, activeModelObj, complexity);
+      }
+      if (format === 'config' || format === 'full') {
+        if (genText) genText += '\n\n' + '═'.repeat(60) + '\n\n';
+        genText += clientGenerateConfig(task, activeModelObj, complexity);
+      }
+      setOutput(genText);
+      showToast('Prompt generated successfully (local engine)!', 'success');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const clientGenerateSystemPrompt = (taskText, modelObj, comp) => {
+    const depth = comp === 'simple' ? 'concise' : comp === 'complex' ? 'highly detailed and exhaustive' : 'thorough';
+    return `# System Prompt — ${modelObj.name} (${modelObj.provider})
+
+## Role
+You are an expert AI assistant specialized in: ${taskText}.
+You leverage the capabilities of ${modelObj.name}, which excels at ${(modelObj.bestFor || []).join(', ')}.
+
+## Core Instructions
+1. Provide ${depth} responses tailored to the user's request.
+2. Always structure output clearly with headings, bullet points, or numbered steps.
+3. When generating code, include comments explaining each significant block.
+4. If the request is ambiguous, ask a clarifying question before proceeding.
+5. Prioritize accuracy over speed; verify facts and logic carefully.
+
+## Output Format
+- Use Markdown formatting for readability.
+- For code: use fenced code blocks with the correct language identifier.
+- For data: use tables or JSON as appropriate.
+- Conclude each response with a brief "Next Steps" section when applicable.
+
+## Constraints & Safety
+- Never fabricate sources or data. Clearly state when you are uncertain.
+- Respect rate limits: keep responses within ${modelObj.contextWindow} context window.
+- Do not produce harmful, biased, or misleading content.
+- Follow the principle of least surprise — be predictable and consistent.
+
+## Error Handling
+- If the input is malformed or missing required fields, respond with a structured error:
+  { "error": "<type>", "message": "<human-readable description>", "suggestion": "<fix>" }
+- For multi-step tasks, checkpoint progress and report partial results on failure.
+
+## Validation Rules
+- All generated code must be syntactically valid.
+- JSON output must conform to the schema provided by the user.
+- Numerical results should include units and precision context.
+
+## Model-Specific Optimizations (${modelObj.name})
+- Strengths to leverage: ${(modelObj.strengths || []).join('; ')}.
+- Known limitations to mitigate: ${(modelObj.weaknesses || []).join('; ')}.
+- Recommended temperature: ${comp === 'simple' ? '0.3' : comp === 'complex' ? '0.7' : '0.5'} for this task type.
+
+## Task Context
+"${taskText}"`;
+  };
+
+  const clientGenerateConfig = (taskText, modelObj, comp) => {
+    const temp = comp === 'simple' ? 0.3 : comp === 'complex' ? 0.7 : 0.5;
+    const maxTokens = comp === 'simple' ? 1024 : comp === 'complex' ? 8192 : 4096;
+    const configObj = {
+      model: { id: modelObj.id, provider: modelObj.provider, name: modelObj.name },
+      parameters: { temperature: temp, max_tokens: maxTokens, top_p: 0.95, frequency_penalty: 0.1, presence_penalty: 0.05 },
+      context: { system_prompt_file: './prompts/system.md', task_description: taskText },
+      tools: { enabled: comp !== 'simple', definitions_path: './tools/', max_tool_calls: comp === 'complex' ? 10 : 5 },
+      retry: { max_retries: 3, backoff_base_ms: 500, backoff_multiplier: 2 },
+      safety: { content_filter: true, max_context_usage: 0.85 },
+      logging: { level: 'info', output: './logs/run.jsonl' }
+    };
+    return `// Configuration Template for ${modelObj.name}\n` + JSON.stringify(configObj, null, 2);
+  };
+
+  const handleCopy = () => {
+    if (output) {
+      navigator.clipboard.writeText(output).then(() => {
+        showToast('Copied to clipboard!', 'success');
+      });
+    }
+  };
+
+  return (
+    <section id="section-prompt-builder" className="section section-prompt-builder">
+      <h2 className="section-title"><span className="gradient-text">Prompt</span> Optimizer</h2>
+      <p className="section-subtitle">Generate optimized system prompts and configuration templates tailored to your specific model and task.</p>
+
+      <div className="pb-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div className="pb-field pb-field-full" style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label className="pb-label" htmlFor="pb-task" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Describe Your Task</label>
+          <textarea 
+            id="pb-task" 
+            className="pb-textarea" 
+            placeholder="e.g., Build an agent that reviews pull requests and suggests improvements..."
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
+            style={{
+              width: '100%', minHeight: '120px', background: 'var(--bg-surface)',
+              border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1rem',
+              color: '#fff', fontSize: '0.95rem', outline: 'none', fontFamily: 'inherit', resize: 'vertical'
+            }}
+          />
+        </div>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label className="pb-label" htmlFor="pb-model" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Target Model</label>
+          <select 
+            id="pb-model" 
+            className="pb-select"
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            style={{
+              background: 'var(--bg-surface)', border: '1px solid var(--glass-border)',
+              borderRadius: '12px', padding: '0.8rem 1rem', color: '#fff', fontSize: '0.9rem',
+              outline: 'none', cursor: 'pointer'
+            }}
+          >
+            {models.map(m => (
+              <option key={m.id} value={m.id} style={{ background: '#111625' }}>
+                {m.icon} {m.name} ({m.provider})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label className="pb-label" htmlFor="pb-complexity" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Complexity</label>
+          <select 
+            id="pb-complexity" 
+            className="pb-select"
+            value={complexity}
+            onChange={(e) => setComplexity(e.target.value)}
+            style={{
+              background: 'var(--bg-surface)', border: '1px solid var(--glass-border)',
+              borderRadius: '12px', padding: '0.8rem 1rem', color: '#fff', fontSize: '0.9rem',
+              outline: 'none', cursor: 'pointer'
+            }}
+          >
+            <option value="simple" style={{ background: '#111625' }}>Simple (Linear)</option>
+            <option value="moderate" style={{ background: '#111625' }}>Moderate (Chained)</option>
+            <option value="complex" style={{ background: '#111625' }}>Complex (Agent Loop)</option>
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <label className="pb-label" htmlFor="pb-format" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Output Format</label>
+          <select 
+            id="pb-format" 
+            className="pb-select"
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
+            style={{
+              background: 'var(--bg-surface)', border: '1px solid var(--glass-border)',
+              borderRadius: '12px', padding: '0.8rem 1rem', color: '#fff', fontSize: '0.9rem',
+              outline: 'none', cursor: 'pointer'
+            }}
+          >
+            <option value="system-prompt" style={{ background: '#111625' }}>System Prompt</option>
+            <option value="config" style={{ background: '#111625' }}>Configuration File</option>
+            <option value="full" style={{ background: '#111625' }}>Full Package (Prompt + Config)</option>
+          </select>
+        </div>
+      </div>
+
+      <button 
+        id="pb-generate" 
+        className="btn btn-primary btn-lg" 
+        onClick={handleGenerate}
+        disabled={isGenerating}
+      >
+        {isGenerating ? '⚡ Generating...' : '⚡ Generate Optimized Prompt'}
+      </button>
+
+      {output && (
+        <div id="pb-output-container" className="pb-output-container active" style={{ marginTop: '2rem' }}>
+          <div className="pb-output-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Outfit', margin: 0 }}>Generated Structure</h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-secondary btn-sm" onClick={handleCopy}>📋 Copy to Clipboard</button>
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={async () => {
+                  setIsTestingLive(true);
+                  let apiKey = '';
+                  try {
+                    const saved = localStorage.getItem('ai_advisor_settings');
+                    if (saved) {
+                      const parsed = JSON.parse(saved);
+                      const mId = selectedModel.toLowerCase();
+                      if (mId.includes('gemini')) apiKey = parsed.geminiKey || '';
+                      else if (mId.includes('claude')) apiKey = parsed.anthropicKey || '';
+                      else if (mId.includes('gpt') || mId.includes('o3')) apiKey = parsed.openaiKey || '';
+                    }
+                  } catch (e) {}
+
+                  try {
+                    const r = await fetch('/api/generate-response', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        model: selectedModel,
+                        prompt: task,
+                        system_prompt: output,
+                        api_key: apiKey || undefined
+                      })
+                    });
+                    if (r.ok) {
+                      const data = await r.json();
+                      setLiveResponse(data);
+                      showToast(`Real response generated via ${data.provider}!`, 'success');
+                    }
+                  } catch (e) {
+                    showToast('Failed to run model test.', 'error');
+                  } finally {
+                    setIsTestingLive(false);
+                  }
+                }}
+                disabled={isTestingLive}
+              >
+                {isTestingLive ? '⚡ Running Test...' : '⚡ Test Real Model Response'}
+              </button>
+            </div>
+          </div>
+          <pre id="pb-output" style={{ background: '#070A13', border: '1px solid var(--glass-border)', padding: '1.25rem', borderRadius: '8px', overflowX: 'auto' }}>
+            <code>{output}</code>
+          </pre>
+
+          {liveResponse && (
+            <div className="glass-card fade-in" style={{ padding: '1.5rem', borderRadius: '12px', marginTop: '1.5rem', borderLeft: '4px solid var(--color-primary)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  🤖 Real Model Response Output ({selectedModel})
+                </h4>
+                <span className={`tag ${liveResponse.live_api ? 'tag--pink' : 'tag--violet'}`}>
+                  {liveResponse.live_api ? '🟢 Live API' : '⚡ Model Architecture Signature'}
+                </span>
+              </div>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', fontSize: '0.85rem', color: '#e2e8f0', background: 'rgba(10, 14, 26, 0.8)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--glass-border)', maxHeight: '400px', overflowY: 'auto' }}>
+                {liveResponse.output}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: SITE FOOTER
+   ======================================================================== */
+function Footer() {
+  return (
+    <footer className="site-footer" style={{ borderTop: '1px solid var(--glass-border)', padding: '3rem 2rem', marginTop: '6rem' }}>
+      <div className="footer-content" style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+        <p className="footer-text" style={{ fontSize: '1rem', fontWeight: '600' }}>
+          Built with ⚡ by <span className="gradient-text">AI Advisor</span> — Making AI selection effortless
+        </p>
+        <p className="footer-sub" style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '0.5rem' }}>
+          Data updated July 2026 • Not affiliated with any AI provider
+        </p>
+      </div>
+    </footer>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: TOAST CONTAINER
+   ======================================================================== */
+function ToastContainer({ toasts }) {
+  const getIcon = (type) => {
+    const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
+    return icons[type] || icons.info;
+  };
+
+  return (
+    <div className="toast-container">
+      {toasts.map(t => (
+        <div key={t.id} className={`toast toast--${t.type}`}>
+          <span>{getIcon(t.type)}</span>
+          <span>{t.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: SIGN UP MODAL (GOOGLE ORIENTED)
+   ======================================================================== */
+
+/* ========================================================================
+   SUB-COMPONENT: SIGN UP MODAL (GOOGLE ORIENTED)
+   ======================================================================== */
+function SignUpModal({ isOpen, onClose, onSuccess, showToast, userAccount, setUserAccount }) {
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleGoogleConnect = (name = "Alex Carter", userEmail = "alex.carter@gmail.com") => {
+    setIsAuthorizing(true);
+    setTimeout(() => {
+      const account = {
+        name,
+        email: userEmail,
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        provider: "google",
+        connectedAt: new Date().toLocaleDateString()
+      };
+      setUserAccount(account);
+      try {
+        localStorage.setItem('ai_advisor_user', JSON.stringify(account));
+      } catch (e) {}
+      setIsAuthorizing(false);
+      showToast(`⚡ Google Account Connected! Welcome, ${account.name}`, "success");
+      onClose();
+      onSuccess();
+    }, 600);
+  };
+
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      showToast("Please enter email and password.", "error");
+      return;
+    }
+    const name = email.split('@')[0];
+    const account = {
+      name,
+      email,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      provider: "email",
+      connectedAt: new Date().toLocaleDateString()
+    };
+    setUserAccount(account);
+    try {
+      localStorage.setItem('ai_advisor_user', JSON.stringify(account));
+    } catch (e) {}
+    showToast(`⚡ Account created for ${name}!`, "success");
+    onClose();
+    onSuccess();
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', padding: '2.25rem', textAlign: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <GoogleIcon />
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-primary-light)' }}>Google SSO Auth</span>
+          </div>
+          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
+        </div>
+
+        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.5rem' }} className="gradient-text">
+          Connect Your Account
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.75rem', lineHeight: 1.4 }}>
+          Sign in with Google to access AI model recommendations, code playbooks, and real execution loops.
+        </p>
+
+        {/* PROMINENT GOOGLE BUTTON */}
+        <button 
+          onClick={() => handleGoogleConnect()}
+          disabled={isAuthorizing}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.75rem',
+            background: '#ffffff',
+            color: '#1f2937',
+            border: '1px solid #dadce0',
+            borderRadius: '30px',
+            padding: '0.85rem 1.25rem',
+            fontSize: '1rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+          }}
+        >
+          <GoogleIcon />
+          <span>{isAuthorizing ? 'Authorizing with Google...' : 'Continue with Google'}</span>
+        </button>
+
+        {/* OR DIVIDER */}
+        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: 'var(--text-dim)', fontSize: '0.8rem' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+          <span style={{ padding: '0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OR WORK EMAIL</span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+        </div>
+
+        {/* FALLBACK EMAIL FORM */}
+        <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: 'var(--text-secondary)' }}>Work Email</label>
+            <input 
+              type="email" 
+              className="form-control" 
+              placeholder="alex@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: 'var(--text-secondary)' }}>Password</label>
+            <input 
+              type="password" 
+              className="form-control" 
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
+            />
+          </div>
+          <button type="submit" className="btn btn-secondary" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', marginTop: '0.25rem', fontWeight: 600 }}>
+            Sign In with Email
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: REQUEST A DEMO MODAL
+   ======================================================================== */
+function RequestDemoModal({ isOpen, onClose, showToast }) {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    company: '',
+    useCase: ''
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.company) {
+      showToast("Please fill in all required fields.", "error");
+      return;
+    }
+    showToast(`⚡ Thank you, ${formData.name}! Your demo request has been received. Our team will contact you shortly.`, "success");
+    onClose();
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px', padding: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }} className="gradient-text">Request a Demo</h2>
+          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', padding: '0.25rem 0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
+        </div>
+        
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+          Get a personalized walk-through of AI Advisor with one of our enterprise AI specialists.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Full Name</label>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="Alex Carter"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Work Email</label>
+            <input 
+              type="email" 
+              className="form-control" 
+              placeholder="alex@company.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Company Name</label>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="Acme Corp"
+              value={formData.company}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Describe Your Use Case (Optional)</label>
+            <textarea 
+              className="form-control" 
+              placeholder="We are building customer support agents..."
+              value={formData.useCase}
+              onChange={(e) => setFormData({ ...formData, useCase: e.target.value })}
+              rows="3"
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '0.6rem', borderRadius: '6px', width: '100%', resize: 'vertical', fontFamily: 'inherit' }}
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '0.5rem', padding: '0.8rem' }}>
+            Submit Request
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: SETTINGS & API KEY MANAGER
+   ======================================================================== */
+function SettingsPanel({ showToast }) {
+  const [geminiKey, setGeminiKey] = useState('');
+  const [anthropicKey, setAnthropicKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [temperature, setTemperature] = useState(0.2);
+  const [maxTokens, setMaxTokens] = useState(4096);
+  const [showKeys, setShowKeys] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('ai_advisor_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.geminiKey) setGeminiKey(parsed.geminiKey);
+        if (parsed.anthropicKey) setAnthropicKey(parsed.anthropicKey);
+        if (parsed.openaiKey) setOpenaiKey(parsed.openaiKey);
+        if (parsed.temperature !== undefined) setTemperature(parsed.temperature);
+        if (parsed.maxTokens !== undefined) setMaxTokens(parsed.maxTokens);
+      }
+    } catch (e) {
+      console.warn("Could not load settings from localStorage:", e);
+    }
+  }, []);
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    const config = {
+      geminiKey,
+      anthropicKey,
+      openaiKey,
+      temperature,
+      maxTokens
+    };
+    try {
+      localStorage.setItem('ai_advisor_settings', JSON.stringify(config));
+      showToast('⚡ Settings and API Keys saved successfully!', 'success');
+    } catch (e) {
+      showToast('Failed to save settings to localStorage.', 'error');
+    }
+  };
+
+  const handleClear = () => {
+    try {
+      localStorage.removeItem('ai_advisor_settings');
+      setGeminiKey('');
+      setAnthropicKey('');
+      setOpenaiKey('');
+      setTemperature(0.2);
+      setMaxTokens(4096);
+      showToast('Settings cleared.', 'info');
+    } catch (e) {
+      showToast('Failed to clear settings.', 'error');
+    }
+  };
+
+  return (
+    <section className="section section-settings">
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 className="section-title" style={{ textAlign: 'left', marginBottom: '0.5rem' }}>
+            <span className="gradient-text">Workspace Settings</span> & API Keys
+          </h2>
+          <p className="section-subtitle" style={{ textAlign: 'left', margin: 0 }}>
+            Configure your provider API keys and default inference parameters. Keys are stored locally in your browser.
+          </p>
+        </div>
+
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* API Keys Card */}
+          <div className="glass-card" style={{ padding: '2rem', borderRadius: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                🔑 Provider API Credentials
+              </h3>
+              <button 
+                type="button" 
+                className="btn-ghost" 
+                onClick={() => setShowKeys(!showKeys)}
+                style={{ fontSize: '0.85rem', color: 'var(--color-primary-light)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                {showKeys ? '🙈 Hide Keys' : '👁️ Show Keys'}
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  Google Gemini API Key
+                </label>
+                <input 
+                  type={showKeys ? "text" : "password"} 
+                  className="form-control" 
+                  placeholder="AIzaSy..."
+                  value={geminiKey}
+                  onChange={(e) => setGeminiKey(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  Anthropic Claude API Key
+                </label>
+                <input 
+                  type={showKeys ? "text" : "password"} 
+                  className="form-control" 
+                  placeholder="sk-ant-api03-..."
+                  value={anthropicKey}
+                  onChange={(e) => setAnthropicKey(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  OpenAI API Key
+                </label>
+                <input 
+                  type={showKeys ? "text" : "password"} 
+                  className="form-control" 
+                  placeholder="sk-proj-..."
+                  value={openaiKey}
+                  onChange={(e) => setOpenaiKey(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Model Parameters Card */}
+          <div className="glass-card" style={{ padding: '2rem', borderRadius: '16px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🎛️ Default Model Parameters
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Temperature
+                  </label>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-primary-light)' }}>
+                    {temperature}
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="1" 
+                  step="0.05" 
+                  value={temperature}
+                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--color-primary)' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.25rem' }}>
+                  <span>0.0 (Precise / Deterministic)</span>
+                  <span>1.0 (Creative)</span>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  Max Output Tokens
+                </label>
+                <input 
+                  type="number" 
+                  className="form-control" 
+                  value={maxTokens}
+                  onChange={(e) => setMaxTokens(parseInt(e.target.value) || 1024)}
+                  min="256"
+                  max="128000"
+                  step="256"
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={handleClear}
+              style={{ borderRadius: '8px', padding: '0.75rem 1.5rem' }}
+            >
+              Clear Storage
+            </button>
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              style={{ borderRadius: '8px', padding: '0.75rem 2rem' }}
+            >
+              Save Configuration
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: MODEL TEST RESPONSE MODAL
+   ======================================================================== */
+function ModelTestModal({ model, onClose, showToast }) {
+  const [promptText, setPromptText] = useState(`Write a production-ready python script demonstrating ${model.name}'s core strengths.`);
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [response, setResponse] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!promptText.trim()) {
+      showToast('Please enter a test prompt.', 'warning');
+      return;
+    }
+
+    setIsLoading(true);
+    setResponse(null);
+
+    let apiKey = '';
+    try {
+      const saved = localStorage.getItem('ai_advisor_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const mId = model.id.toLowerCase();
+        if (mId.includes('gemini')) apiKey = parsed.geminiKey || '';
+        else if (mId.includes('claude')) apiKey = parsed.anthropicKey || '';
+        else if (mId.includes('gpt') || mId.includes('o3')) apiKey = parsed.openaiKey || '';
+      }
+    } catch (e) {}
+
+    try {
+      const res = await fetch('/api/generate-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: model.id,
+          prompt: promptText,
+          system_prompt: systemPrompt || undefined,
+          api_key: apiKey || undefined
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setResponse(data);
+        showToast(`Response generated via ${data.provider}!`, 'success');
+      } else {
+        throw new Error('API server returned error');
+      }
+    } catch (err) {
+      showToast('Error connecting to backend model engine.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const samplePrompts = [
+    `Write a production-ready python script demonstrating ${model.name}'s core strengths.`,
+    `Refactor a multi-step agentic loop to handle rate limits and tool errors.`,
+    `Explain the architectural difference between ${model.name} and competing models.`
+  ];
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '750px', width: '90%', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span style={{ fontSize: '1.75rem' }}>{model.icon}</span>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Test Model Response — {model.name}</h3>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Provider: {model.provider} | Context: {model.contextWindow}</span>
+            </div>
+          </div>
+          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>Sample Prompts</label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {samplePrompts.map((sp, i) => (
+                <button 
+                  key={i} 
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setPromptText(sp)}
+                  style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', border: '1px solid var(--glass-border)', borderRadius: '6px', color: 'var(--color-primary-light)', cursor: 'pointer', textAlign: 'left' }}
+                >
+                  Prompt {i + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>Test Prompt</label>
+            <textarea 
+              className="form-control" 
+              rows="3" 
+              value={promptText}
+              onChange={(e) => setPromptText(e.target.value)}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff', resize: 'vertical', fontFamily: 'inherit' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>System Instructions (Optional)</label>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="e.g. You are a senior AI systems architect..."
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
+            />
+          </div>
+
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={handleGenerate}
+            disabled={isLoading}
+            style={{ padding: '0.8rem', borderRadius: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+          >
+            {isLoading ? '⚡ Executing Inference Engine...' : `⚡ Generate Real Response (${model.name})`}
+          </button>
+
+          {response && (
+            <div className="glass-card fade-in" style={{ padding: '1.25rem', borderRadius: '12px', marginTop: '1rem', borderLeft: '4px solid var(--color-primary)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <span className={`tag ${response.live_api ? 'tag--pink' : 'tag--violet'}`} style={{ fontWeight: 700 }}>
+                  {response.live_api ? '🟢 Live Provider API' : '⚡ Model Architecture Signature'}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{response.provider}</span>
+              </div>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', fontSize: '0.85rem', color: '#e2e8f0', background: 'rgba(10, 14, 26, 0.6)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--glass-border)', maxHeight: '350px', overflowY: 'auto' }}>
+                {response.output}
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+/* ========================================================================
+   MAIN APPLICATION ROOT
+   ======================================================================== */
 function App() {
   const [models, setModels] = useState(FALLBACK_DATA.models);
   const [agents, setAgents] = useState(FALLBACK_DATA.agents);
@@ -864,2090 +2954,5 @@ function App() {
     </div>
   );
 }
-
-/* ========================================================================
-   SUB-COMPONENT: GOOGLE ICON SVG
-   ======================================================================== */
-const GoogleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.259h2.908c1.702-1.567 2.684-3.874 2.684-6.617z"/>
-    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
-    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-  </svg>
-);
-
-/* ========================================================================
-   SUB-COMPONENT: GOOGLE ACCOUNT NAV WIDGET (YOUTUBE / GOOGLE STYLE)
-   ======================================================================== */
-const GoogleAccountNavWidget = ({ userAccount, setUserAccount, onOpenSignUp, showToast, handleRouteToDashboard, setView }) => {
-  const [showMenu, setShowMenu] = useState(false);
-  const [showOneTap, setShowOneTap] = useState(() => !userAccount);
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleGoogleConnect = (name = "Alex Carter", email = "alex.carter@gmail.com") => {
-    const account = {
-      name,
-      email,
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      provider: "google",
-      connectedAt: new Date().toLocaleDateString()
-    };
-    setUserAccount(account);
-    try {
-      localStorage.setItem('ai_advisor_user', JSON.stringify(account));
-    } catch (e) {}
-    setShowOneTap(false);
-    setShowMenu(false);
-    showToast(`⚡ Signed in with Google as ${account.name}`, 'success');
-    if (handleRouteToDashboard) {
-      handleRouteToDashboard('overview');
-    }
-  };
-
-  const handleSignOut = () => {
-    setUserAccount(null);
-    try {
-      localStorage.removeItem('ai_advisor_user');
-    } catch (e) {}
-    setShowMenu(false);
-    setShowOneTap(true);
-    showToast('Signed out of Google account.', 'info');
-  };
-
-  return (
-    <div style={{ position: 'relative' }} ref={menuRef}>
-      {userAccount ? (
-        // SIGNED IN: GOOGLE PROFILE BADGE
-        <button 
-          onClick={() => setShowMenu(!showMenu)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.6rem',
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '30px',
-            padding: '0.25rem 0.75rem 0.25rem 0.3rem',
-            color: '#fff',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          <div style={{ position: 'relative' }}>
-            <img 
-              src={userAccount.avatar} 
-              alt={userAccount.name} 
-              style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #4285F4' }}
-            />
-            <span style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '8px', height: '8px', background: '#34A853', borderRadius: '50%', border: '1px solid #000' }}></span>
-          </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{userAccount.name.split(' ')[0]}</span>
-          <GoogleIcon />
-        </button>
-      ) : (
-        // NOT SIGNED IN: GOOGLE SIGN IN BUTTON
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button 
-            onClick={onOpenSignUp}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: '#ffffff',
-              color: '#1f2937',
-              border: '1px solid #dadce0',
-              borderRadius: '20px',
-              padding: '0.4rem 1rem',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}
-          >
-            <GoogleIcon />
-            <span>Sign in with Google</span>
-          </button>
-        </div>
-      )}
-
-      {/* FLOATING ONE-TAP POPOVER (WHEN NOT SIGNED IN) */}
-      {!userAccount && showOneTap && (
-        <div 
-          className="fade-in"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 12px)',
-            right: 0,
-            width: '300px',
-            background: '#ffffff',
-            color: '#202124',
-            borderRadius: '16px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-            padding: '1.25rem',
-            zIndex: 9999,
-            border: '1px solid #e5e7eb'
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <GoogleIcon />
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5f6368' }}>Google One-Tap</span>
-            </div>
-            <button onClick={() => setShowOneTap(false)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer', fontSize: '1rem' }}>✕</button>
-          </div>
-
-          <p style={{ fontSize: '0.85rem', color: '#3c4043', margin: '0 0 1rem 0', lineHeight: 1.4 }}>
-            Sign in to <strong>AI Advisor</strong> with your Google Account
-          </p>
-
-          <div 
-            onClick={() => handleGoogleConnect()}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '0.6rem 0.75rem',
-              background: '#f8f9fa',
-              border: '1px solid #dadce0',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'background 0.2s ease'
-            }}
-          >
-            <img 
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" 
-              alt="Alex Carter" 
-              style={{ width: '36px', height: '36px', borderRadius: '50%' }}
-            />
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#202124' }}>Alex Carter</div>
-              <div style={{ fontSize: '0.75rem', color: '#5f6368', textOverflow: 'ellipsis', overflow: 'hidden' }}>alex.carter@gmail.com</div>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => handleGoogleConnect()}
-            style={{
-              width: '100%',
-              marginTop: '0.85rem',
-              background: '#1a73e8',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '0.5rem',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Continue as Alex
-          </button>
-        </div>
-      )}
-
-      {/* YOUTUBE / GOOGLE-STYLE ACCOUNT DROPDOWN CARD (WHEN SIGNED IN) */}
-      {userAccount && showMenu && (
-        <div 
-          className="fade-in"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 12px)',
-            right: 0,
-            width: '310px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '16px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-            padding: '1.25rem',
-            zIndex: 9999,
-            backdropFilter: 'blur(20px)'
-          }}
-        >
-          {/* User Info Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', paddingBottom: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
-            <img 
-              src={userAccount.avatar} 
-              alt={userAccount.name} 
-              style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #4285F4' }}
-            />
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{userAccount.name}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden' }}>{userAccount.email}</div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.3rem', fontSize: '0.7rem', color: '#34A853', background: 'rgba(52, 168, 83, 0.1)', padding: '0.15rem 0.5rem', borderRadius: '10px' }}>
-                <GoogleIcon /> Google Account Verified
-              </div>
-            </div>
-          </div>
-
-          {/* Account Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-            <button 
-              onClick={() => { setShowMenu(false); if (handleRouteToDashboard) handleRouteToDashboard('overview'); }}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: '#fff', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem' }}
-            >
-              🚀 Workspace Dashboard
-            </button>
-            <button 
-              onClick={() => handleGoogleConnect("Jordan Smith", "jordan.smith@gmail.com")}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: 'var(--text-secondary)', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem' }}
-            >
-              🔄 Switch Account
-            </button>
-            <button 
-              onClick={handleSignOut}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: 'var(--color-danger)', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', borderTop: '1px solid var(--glass-border)', marginTop: '0.25rem', paddingTop: '0.75rem' }}
-            >
-              🚪 Sign Out
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: HEADER
-   ======================================================================== */
-const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick, userAccount, setUserAccount, showToast }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return (
-    <nav 
-      id="main-nav" 
-      style={{
-        background: scrolled ? 'rgba(10, 14, 26, 0.95)' : 'rgba(10, 14, 26, 0.8)',
-        boxShadow: scrolled ? '0 10px 30px -10px rgba(0,0,0,0.5)' : 'none',
-      }}
-    >
-      <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); setView('home'); }} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          <img src={logoImg} alt="AI Advisor Logo" style={{ height: '32px', width: 'auto', borderRadius: '4px', background: '#F8F6F0', padding: '2px' }} />
-          <span>AI Advisor</span>
-        </a>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button 
-            className="btn btn-secondary btn-sm" 
-            onClick={() => handleRoute('overview')}
-            style={{ borderRadius: '20px', padding: '0.4rem 1rem', fontSize: '0.85rem' }}
-          >
-            Launch Workspace
-          </button>
-
-          <GoogleAccountNavWidget 
-            userAccount={userAccount} 
-            setUserAccount={setUserAccount} 
-            onOpenSignUp={onSignUpClick} 
-            showToast={showToast} 
-            handleRouteToDashboard={handleRoute} 
-            setView={setView} 
-          />
-        </div>
-      </div>
-    </nav>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: HERO
-   ======================================================================== */
-const Hero = () => {
-  const handleStart = () => {
-    const el = document.getElementById('section-advisor');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleExplore = () => {
-    const el = document.getElementById('section-database');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  return (
-    <section id="section-hero" className="section section-hero">
-      <div className="hero-content">
-        <div className="hero-badge">🚀 AI-Powered Recommendations</div>
-        <h1 className="hero-title">Find the <span className="gradient-text">Perfect AI</span> for Your Project</h1>
-        <p className="hero-description text-center">
-          Stop guessing which AI model or agent to use. Get personalized recommendations, implementation playbooks, and error-free code templates — all in one place.
-        </p>
-        <div className="hero-cta">
-          <button className="btn btn-primary btn-lg" onClick={handleStart}>🎯 Get Recommendations</button>
-          <button className="btn btn-secondary btn-lg" onClick={handleExplore}>📊 Explore Database</button>
-        </div>
-        <div className="hero-stats">
-          <div className="hero-stat">
-            <span className="hero-stat-number">12+</span>
-            <span className="hero-stat-label">Models Compared</span>
-          </div>
-          <div className="hero-stat">
-            <span className="hero-stat-number">9+</span>
-            <span className="hero-stat-label">Agent Frameworks</span>
-          </div>
-          <div className="hero-stat">
-            <span className="hero-stat-number">5</span>
-            <span className="hero-stat-label">Implementation Playbooks</span>
-          </div>
-        </div>
-      </div>
-      <div className="hero-orb hero-orb-1"></div>
-      <div className="hero-orb hero-orb-2"></div>
-    </section>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: ADVISOR WIZARD
-   ======================================================================== */
-const AdvisorWizard = ({ models, agents, showToast }) => {
-  const [step, setStep] = useState(1);
-  const [answers, setAnswers] = useState({
-    domain: '',
-    complexity: '',
-    autonomy: '',
-    budget: ''
-  });
-  const [results, setResults] = useState(null);
-
-  const STEP_KEYS = { 1: 'domain', 2: 'complexity', 3: 'autonomy', 4: 'budget' };
-
-  const handleSelectOption = (key, value) => {
-    setAnswers(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleNext = () => {
-    const currentKey = STEP_KEYS[step];
-    if (currentKey && !answers[currentKey]) {
-      showToast('Please select an option before continuing.', 'warning');
-      return;
-    }
-    
-    const nextStep = step + 1;
-    setStep(nextStep);
-    if (nextStep > 4) {
-      calculateRecommendation();
-    }
-  };
-
-  const handlePrev = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
-  };
-
-  const handleRestart = () => {
-    setStep(1);
-    setAnswers({ domain: '', complexity: '', autonomy: '', budget: '' });
-    setResults(null);
-  };
-
-  const calculateRecommendation = () => {
-    const { domain, complexity, autonomy, budget } = answers;
-
-    if (!models || models.length === 0) {
-      showToast('Model database is not loaded yet. Please wait a moment.', 'warning');
-      return;
-    }
-
-    const domainKeywords = {
-      'coding': ['coding', 'code', 'dev', 'developer', 'debugging', 'software', 'programming'],
-      'research': ['research', 'analysis', 'scientific', 'mathematical', 'reasoning', 'puzzles'],
-      'data-processing': ['data', 'pipeline', 'parsing', 'analytics', 'extraction', 'document', 'etl'],
-      'content-creation': ['content', 'creative', 'writing', 'copywriting', 'blogs', 'conversational', 'chat'],
-      'customer-support': ['support', 'chat', 'chatbot', 'assistant', 'conversational', 'orchestrations']
-    };
-
-    const keywords = domainKeywords[domain] || [domain];
-    const tierOrder = ['free', 'low', 'medium', 'high', 'enterprise'];
-
-    // Score Models
-    const scoredModels = models.map(model => {
-      let score = 0;
-      if (Array.isArray(model.bestFor)) {
-        model.bestFor.forEach(bf => {
-          keywords.forEach(kw => {
-            if (bf.toLowerCase().includes(kw.toLowerCase())) score += 3;
-          });
-        });
-      }
-      
-      const budgetIdx = tierOrder.indexOf(budget);
-      const tierIdx = tierOrder.indexOf(model.tier || 'low');
-      if (budgetIdx !== -1 && tierIdx !== -1) {
-        if (budgetIdx === tierIdx) score += 5;
-        else if (Math.abs(budgetIdx - tierIdx) === 1) score += 2;
-      }
-
-      if (complexity === 'simple' && model.speed === 'fast') score += 3;
-      if (complexity === 'complex' && (model.speed === 'medium' || model.speed === 'slow')) score += 2;
-
-      return { ...model, score };
-    }).sort((a, b) => b.score - a.score);
-
-    // Score Agents
-    let recommendedAgent = null;
-    if (autonomy !== 'single-llm' && agents && agents.length > 0) {
-      const scoredAgents = agents.map(agent => {
-        let score = 0;
-        if (Array.isArray(agent.bestFor)) {
-          agent.bestFor.forEach(bf => {
-            keywords.forEach(kw => {
-              if (bf.toLowerCase().includes(kw.toLowerCase())) score += 3;
-            });
-          });
-        }
-        if (complexity === 'complex' && agent.complexity === 'advanced') score += 3;
-        if (complexity === 'simple' && agent.complexity === 'beginner') score += 2;
-        if (autonomy === 'autonomous-agent' && agent.complexity === 'advanced') score += 3;
-        if (autonomy === 'human-in-loop') {
-          const hasHIL = (agent.features || []).some(f => /human.in.loop/i.test(f));
-          if (hasHIL) score += 4;
-        }
-        return { ...agent, score };
-      }).sort((a, b) => b.score - a.score);
-
-      recommendedAgent = scoredAgents[0] || null;
-    }
-
-    const topModel = scoredModels[0] || models[0];
-
-    // Generate rationale string
-    let reasoning = `Based on your focus on ${domain} tasks with ${complexity} complexity, `;
-    reasoning += `a ${budget} budget, and preference for ${(autonomy || 'single-llm').replace(/-/g, ' ')} workflows, `;
-    reasoning += `we recommend ${topModel.name} by ${topModel.provider}. `;
-    reasoning += `It excels at ${(topModel.bestFor || []).slice(0, 3).join(', ')} `;
-    reasoning += `and offers ${topModel.speed || 'medium'} inference speed with ${topModel.pricing || 'standard'} pricing.`;
-    if (recommendedAgent) {
-      reasoning += ` Paired with ${recommendedAgent.name}, you get a robust ${recommendedAgent.type || 'framework'} `;
-      reasoning += `framework that handles ${(recommendedAgent.bestFor || []).slice(0, 2).join(' and ')}.`;
-    }
-
-    // Generate tips
-    const tips = [
-      `Start with ${topModel.name}'s default parameters, then fine-tune temperature for your ${domain} use case.`,
-      `Use structured output (JSON mode) for reliable parsing in production pipelines.`,
-      `Implement exponential back-off retry logic to handle rate limits gracefully.`
-    ];
-
-    if (recommendedAgent) {
-      tips.push(`Integrate ${recommendedAgent.name} incrementally — begin with a single-agent setup before scaling to multi-agent.`);
-      tips.push(`Add logging and observability early to debug agent decision chains.`);
-    }
-
-    setResults({ model: topModel, agent: recommendedAgent, reasoning, tips });
-  };
-
-  const progressPct = step <= 4 ? (step / 4) * 100 : 100;
-
-  return (
-    <section id="section-advisor" className="section section-advisor">
-      <h2 className="section-title"><span className="gradient-text">Smart Advisor</span> Wizard</h2>
-      <p className="section-subtitle">Answer 4 simple questions and get a personalized AI recommendation tailored to your project needs.</p>
-
-      <div className="wizard-container glass-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div className="wizard-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-          <span className="wizard-step-indicator" style={{ fontWeight: '600' }}>
-            {step <= 4 ? `Step ${step} of 4` : 'Results'}
-          </span>
-          {step > 4 && (
-            <button className="btn btn-ghost btn-sm" onClick={handleRestart}>↺ Restart</button>
-          )}
-        </div>
-
-        <div className="wizard-progress" style={{ width: '100%', height: '6px', background: 'var(--bg-surface)', borderRadius: '3px', marginBottom: '2.5rem', overflow: 'hidden' }}>
-          <div className="wizard-progress-fill" style={{ width: `${progressPct}%`, height: '100%', background: 'var(--gradient-primary)', transition: 'width 0.3s ease' }}></div>
-        </div>
-
-        {/* STEP 1: Task Domain */}
-        {step === 1 && (
-          <div className="wizard-step">
-            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>What type of project are you building?</h3>
-            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Select the primary domain of your AI-powered project.</p>
-            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              {[
-                { val: 'coding', icon: '💻', title: 'Coding & Dev', desc: 'Build, debug, or refactor code' },
-                { val: 'research', icon: '🔍', title: 'Research & Analysis', desc: 'Deep research, summaries' },
-                { val: 'data-processing', icon: '📊', title: 'Data Processing', desc: 'Pipelines, analytics, ETL' },
-                { val: 'content-creation', icon: '✍️', title: 'Content Creation', desc: 'Blogs, copywriting, marketing' },
-                { val: 'customer-support', icon: '🎧', title: 'Customer Support', desc: 'Chatbots and support automation' }
-              ].map(opt => (
-                <button
-                  key={opt.val}
-                  className={`wizard-option ${answers.domain === opt.val ? 'selected' : ''}`}
-                  onClick={() => handleSelectOption('domain', opt.val)}
-                  style={{
-                    background: answers.domain === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
-                    border: answers.domain === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
-                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
-                  }}
-                >
-                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
-                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
-                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 2: Complexity */}
-        {step === 2 && (
-          <div className="wizard-step">
-            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>How complex is your project?</h3>
-            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>This helps us recommend the right level of AI capability.</p>
-            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              {[
-                { val: 'simple', icon: '🟢', title: 'Simple', desc: 'Single task, straightforward inputs/outputs' },
-                { val: 'moderate', icon: '🟡', title: 'Moderate', desc: 'Multi-step chains, simple tool integration' },
-                { val: 'complex', icon: '🔴', title: 'Complex', desc: 'Agentic loops, custom tools, self-correction' }
-              ].map(opt => (
-                <button
-                  key={opt.val}
-                  className={`wizard-option ${answers.complexity === opt.val ? 'selected' : ''}`}
-                  onClick={() => handleSelectOption('complexity', opt.val)}
-                  style={{
-                    background: answers.complexity === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
-                    border: answers.complexity === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
-                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
-                  }}
-                >
-                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
-                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
-                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Autonomy */}
-        {step === 3 && (
-          <div className="wizard-step">
-            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>How autonomous should the AI be?</h3>
-            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Choose between direct models or collaborative frameworks.</p>
-            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              {[
-                { val: 'autonomous-agent', icon: '🤖', title: 'Fully Autonomous', desc: 'AI plans, executes and corrects independently' },
-                { val: 'human-in-loop', icon: '🤝', title: 'Human-in-the-Loop', desc: 'AI proposes, human signs off before execution' },
-                { val: 'single-llm', icon: '💬', title: 'Single LLM (No Agent)', desc: 'Direct prompt engineering response' }
-              ].map(opt => (
-                <button
-                  key={opt.val}
-                  className={`wizard-option ${answers.autonomy === opt.val ? 'selected' : ''}`}
-                  onClick={() => handleSelectOption('autonomy', opt.val)}
-                  style={{
-                    background: answers.autonomy === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
-                    border: answers.autonomy === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
-                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
-                  }}
-                >
-                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
-                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
-                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: Budget */}
-        {step === 4 && (
-          <div className="wizard-step">
-            <h3 className="wizard-step-title" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '0.5rem' }}>What's your budget tier?</h3>
-            <p className="wizard-step-description" style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Select optimal API costing constraints.</p>
-            <div className="wizard-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              {[
-                { val: 'free', icon: '🆓', title: 'Free / Open Source', desc: 'Self-hosted or free trial APIs' },
-                { val: 'low', icon: '💰', title: 'Low ($0 - $50/mo)', desc: 'Affordable developer APIs' },
-                { val: 'medium', icon: '💎', title: 'Medium ($50 - $200/mo)', desc: 'Balanced cost and performance' },
-                { val: 'high', icon: '🏆', title: 'High ($200+/mo)', desc: 'Enterprise power, unconstrained' }
-              ].map(opt => (
-                <button
-                  key={opt.val}
-                  className={`wizard-option ${answers.budget === opt.val ? 'selected' : ''}`}
-                  onClick={() => handleSelectOption('budget', opt.val)}
-                  style={{
-                    background: answers.budget === opt.val ? 'rgba(139, 92, 246, 0.15)' : 'rgba(26, 31, 53, 0.4)',
-                    border: answers.budget === opt.val ? '2px solid var(--color-primary)' : '1px solid var(--glass-border)',
-                    padding: '1.25rem', borderRadius: '12px', textAlign: 'left', cursor: 'pointer'
-                  }}
-                >
-                  <span className="wizard-option-icon" style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>{opt.icon}</span>
-                  <span className="wizard-option-title" style={{ fontWeight: '700', display: 'block', marginBottom: '0.2rem' }}>{opt.title}</span>
-                  <span className="wizard-option-desc" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{opt.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 5: Results */}
-        {step > 4 && results && (
-          <div className="wizard-step fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '800', textAlign: 'center', marginBottom: '0.5rem' }}>Your Recommended Setup</h3>
-            
-            <div className="result-card glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: '4px solid var(--color-primary)' }}>
-              <div className="result-header" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <span style={{ fontSize: '2.5rem' }}>{results.model.icon}</span>
-                <div>
-                  <h4 style={{ fontSize: '1.25rem', fontWeight: '700' }}>{results.model.name}</h4>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Provider: {results.model.provider}</span>
-                </div>
-              </div>
-              <p style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>{results.reasoning}</p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                <span className="tag tag--violet">Context: {results.model.contextWindow}</span>
-                <span className="tag tag--pink">Speed: {results.model.speed}</span>
-                <span className="tag tag--cyan">Pricing: {results.model.pricing}</span>
-              </div>
-            </div>
-
-            {results.agent && (
-              <div className="result-card glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: '4px solid var(--color-accent)' }}>
-                <div className="result-header" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <span style={{ fontSize: '2.5rem' }}>{results.agent.icon}</span>
-                  <div>
-                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700' }}>{results.agent.name}</h4>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Type: {results.agent.type}</span>
-                  </div>
-                </div>
-                <p style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>{results.agent.description}</p>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                  <span className="tag tag--cyan">Complexity: {results.agent.complexity}</span>
-                  <span className="tag tag--pink">Open Source: {results.agent.openSource ? 'Yes' : 'No'}</span>
-                </div>
-              </div>
-            )}
-
-            <div className="result-card glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="result-header" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <span style={{ fontSize: '1.5rem' }}>🚀</span>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: '700' }}>Next Steps & Implementation Tips</h4>
-              </div>
-              <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
-                {results.tips.map((tip, idx) => (
-                  <li key={idx} style={{ color: 'var(--text-secondary)', lineHeight: '1.4' }}>{tip}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
-        <div className="wizard-nav" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2.5rem' }}>
-          {step > 1 && step <= 4 && (
-            <button className="btn btn-secondary" onClick={handlePrev}>← Previous</button>
-          )}
-          {step <= 4 ? (
-            <button className="btn btn-primary" style={{ marginLeft: 'auto' }} onClick={handleNext}>Next →</button>
-          ) : (
-            <button className="btn btn-primary" style={{ margin: '0 auto' }} onClick={handleRestart}>↺ Try Again</button>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: DATABASE
-   ======================================================================== */
-const ModelDatabase = ({ models, agents, compareSet, setCompareSet, isModalActive, setIsModalActive, showToast }) => {
-  const [filter, setFilter] = useState('all');
-  const [query, setQuery] = useState('');
-  const [testingModel, setTestingModel] = useState(null);
-
-  const dbItems = useMemo(() => {
-    const list = [
-      ...models.map(m => ({ ...m, _type: 'model' })),
-      ...agents.map(a => ({ ...a, _type: 'agent' }))
-    ];
-    return list.filter(item => {
-      if (filter !== 'all' && item._type !== filter) return false;
-      if (query.trim() !== '') {
-        const q = query.toLowerCase();
-        const searchPool = [
-          item.name,
-          item.provider || '',
-          item.type || '',
-          item.description || '',
-          ...(item.bestFor || [])
-        ].join(' ').toLowerCase();
-        return searchPool.includes(q);
-      }
-      return true;
-    });
-  }, [models, agents, filter, query]);
-
-  const handleCheckboxChange = (type, id, checked) => {
-    const key = `${type}:${id}`;
-    setCompareSet(prev => {
-      const next = new Set(prev);
-      if (checked) {
-        next.add(key);
-      } else {
-        next.delete(key);
-      }
-      return next;
-    });
-  };
-
-  const handleOpenCompare = () => {
-    if (compareSet.size < 2) {
-      showToast('Select at least 2 items to compare.', 'warning');
-      return;
-    }
-    setIsModalActive(true);
-  };
-
-  const compareItemsList = useMemo(() => {
-    return [...compareSet].map(key => {
-      const [type, id] = key.split(':');
-      if (type === 'model') {
-        return { ...models.find(m => m.id === id), _type: 'model' };
-      } else {
-        return { ...agents.find(a => a.id === id), _type: 'agent' };
-      }
-    }).filter(i => i.id !== undefined);
-  }, [compareSet, models, agents]);
-
-  return (
-    <section id="section-database" className="section section-database">
-      <h2 className="section-title"><span className="gradient-text">AI Model & Agent</span> Database</h2>
-      <p className="section-subtitle">Explore and compare the leading AI models and agent frameworks.</p>
-
-      <div className="db-controls" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-        <div className="search-wrapper" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '0.2rem 1rem', minWidth: '280px' }}>
-          <span className="search-icon" style={{ marginRight: '0.5rem' }}>🔍</span>
-          <input 
-            type="text" 
-            placeholder="Search models and agents..." 
-            className="pb-input"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            style={{ background: 'none', border: 'none', color: '#fff', outline: 'none', padding: '0.6rem 0', width: '100%' }}
-          />
-        </div>
-        <div className="db-filters">
-          <button className={`db-filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>All</button>
-          <button className={`db-filter-btn ${filter === 'model' ? 'active' : ''}`} onClick={() => setFilter('model')}>Models</button>
-          <button className={`db-filter-btn ${filter === 'agent' ? 'active' : ''}`} onClick={() => setFilter('agent')}>Agents</button>
-        </div>
-      </div>
-
-      <div id="db-grid">
-        {dbItems.map(item => {
-          const isModel = item._type === 'model';
-          const tagColor = isModel ? 'violet' : 'cyan';
-          const isChecked = compareSet.has(`${item._type}:${item.id}`);
-
-          return (
-            <div key={`${item._type}-${item.id}`} className="model-card glass-card fade-in">
-              <div className="model-card-header">
-                <div>
-                  <div className="model-card-name" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <span>{item.icon}</span> {item.name}
-                  </div>
-                  <div className="model-card-provider">{item.provider || item.type}</div>
-                </div>
-                <span className={`tag tag--${tagColor}`}>{isModel ? 'Model' : 'Agent'}</span>
-              </div>
-              <p className="model-card-desc">{item.description}</p>
-              <div className="model-card-tags">
-                {(item.bestFor || []).map((b, i) => (
-                  <span key={i} className="tag tag--pink">{b}</span>
-                ))}
-              </div>
-              
-              <div className="model-card-stats" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '1rem', marginTop: '1rem' }}>
-                {isModel ? (
-                  <>
-                    <div>
-                      <span className="stat-label">Context</span>
-                      <div className="stat-value">{item.contextWindow}</div>
-                    </div>
-                    <div>
-                      <span className="stat-label">Speed</span>
-                      <div className="stat-value" style={{ textTransform: 'capitalize' }}>{item.speed}</div>
-                    </div>
-                    <div>
-                      <span className="stat-label">Pricing</span>
-                      <div className="stat-value" style={{ fontSize: '0.75rem', wordBreak: 'break-word' }}>{item.pricing}</div>
-                    </div>
-                    <div>
-                      <span className="stat-label">Tier</span>
-                      <div className="stat-value" style={{ textTransform: 'capitalize' }}>{item.tier}</div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <span className="stat-label">Complexity</span>
-                      <div className="stat-value" style={{ textTransform: 'capitalize' }}>{item.complexity}</div>
-                    </div>
-                    <div>
-                      <span className="stat-label">Languages</span>
-                      <div className="stat-value">{item.languages?.join(', ') || '—'}</div>
-                    </div>
-                    <div>
-                      <span className="stat-label">License</span>
-                      <div className="stat-value">{item.openSource ? 'Open Source' : 'Proprietary'}</div>
-                    </div>
-                    <div>
-                      <span className="stat-label">GitHub</span>
-                      <div className="stat-value">
-                        {item.link ? (
-                          <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem' }}>View Source</a>
-                        ) : '—'}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="model-card-footer" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '1rem', paddingTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input 
-                    type="checkbox" 
-                    id={`compare-${item._type}-${item.id}`}
-                    className="compare-checkbox" 
-                    checked={isChecked}
-                    onChange={(e) => handleCheckboxChange(item._type, item.id, e.target.checked)}
-                  />
-                  <label htmlFor={`compare-${item._type}-${item.id}`} className="compare-label">
-                    Compare
-                  </label>
-                </div>
-
-                {isModel && (
-                  <button 
-                    className="btn btn-secondary btn-sm" 
-                    onClick={() => setTestingModel(item)}
-                    style={{ padding: '0.3rem 0.75rem', fontSize: '0.75rem', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                  >
-                    ⚡ Test Response
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* FLOATING COMPARE BUTTON */}
-      <button 
-        id="compare-btn" 
-        className={`btn btn-primary ${compareSet.size >= 2 ? 'visible' : ''}`}
-        onClick={handleOpenCompare}
-      >
-        Compare <span className="compare-count">{compareSet.size}</span>
-      </button>
-
-      {/* MODEL RESPONSE PLAYGROUND MODAL */}
-      {testingModel && (
-        <ModelTestModal model={testingModel} onClose={() => setTestingModel(null)} showToast={showToast} />
-      )}
-
-      {/* COMPARISON MODAL */}
-      {isModalActive && (
-        <div className="modal-overlay active" onClick={() => setIsModalActive(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ background: '#0F1322', border: '1px solid var(--color-primary)', boxShadow: '0 8px 32px var(--color-primary-glow)' }}>
-            <div className="modal-header">
-              <h3 className="modal-title" style={{ fontSize: '1.4rem', fontWeight: '700' }}>Model & Agent Comparison</h3>
-              <button className="modal-close" onClick={() => setIsModalActive(false)}>✕</button>
-            </div>
-            <div className="modal-body" style={{ overflowX: 'auto', marginTop: '1rem' }}>
-              <table className="comparison-table" style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                    <th style={{ padding: '1rem', textAlign: 'left', background: 'rgba(255,255,255,0.02)', color: 'var(--text-dim)', width: '180px' }}>Attribute</th>
-                    {compareItemsList.map(item => (
-                      <th key={item.id} style={{ padding: '1rem', textAlign: 'left', fontWeight: '700' }}>
-                        {item.icon} {item.name}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { key: 'provider', label: 'Provider / Type', fn: i => i.provider || i.type || '—' },
-                    { key: 'desc', label: 'Description', fn: i => i.description || '—' },
-                    { key: 'ctx', label: 'Context Window', fn: i => i.contextWindow || '—' },
-                    { key: 'price', label: 'Pricing', fn: i => i.pricing || '—' },
-                    { key: 'speed', label: 'Speed', fn: i => i.speed || '—' },
-                    { key: 'best', label: 'Best For', fn: i => i.bestFor?.join(', ') || '—' },
-                    { key: 'strength', label: 'Strengths', fn: i => i.strengths?.join(', ') || '—' },
-                    { key: 'weak', label: 'Weaknesses', fn: i => i.weaknesses?.join(', ') || '—' },
-                    { key: 'complexity', label: 'Complexity', fn: i => i.complexity || '—' },
-                    { key: 'languages', label: 'Languages', fn: i => i.languages?.join(', ') || '—' },
-                    { key: 'open', label: 'Open Source', fn: i => i.openSource != null ? (i.openSource ? 'Yes' : 'No') : '—' },
-                    { key: 'features', label: 'Features', fn: i => i.features?.join(', ') || '—' }
-                  ].map((row, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                      <td style={{ padding: '0.85rem 1rem', background: 'rgba(255,255,255,0.01)', color: 'var(--text-secondary)', fontWeight: '600' }}>{row.label}</td>
-                      {compareItemsList.map(item => (
-                        <td key={item.id} style={{ padding: '0.85rem 1rem', color: '#e2e8f0', lineHeight: '1.4' }}>
-                          {row.fn(item)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-    </section>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: PLAYBOOKS
-   ======================================================================== */
-const PlaybookViewer = ({ playbooks, showToast }) => {
-  const [activeCategory, setActiveCategory] = useState('coding');
-  
-  // Track selected programming language tab per playbook step index
-  const [stepLanguages, setStepLanguages] = useState({});
-
-  const currentPlaybook = playbooks[activeCategory];
-
-  const handleCopyCode = (stepIdx, codeText) => {
-    navigator.clipboard.writeText(codeText).then(() => {
-      showToast('Code copied to clipboard!', 'success');
-    }).catch(() => {
-      showToast('Could not copy code.', 'error');
-    });
-  };
-
-  const getStepLanguage = (stepIdx, stepObj) => {
-    if (stepLanguages[stepIdx]) return stepLanguages[stepIdx];
-    // Default to python if exists, else first available
-    if (stepObj.code?.python) return 'python';
-    if (stepObj.code?.javascript) return 'javascript';
-    return '';
-  };
-
-  const setStepLanguage = (stepIdx, lang) => {
-    setStepLanguages(prev => ({ ...prev, [stepIdx]: lang }));
-  };
-
-  return (
-    <section id="section-playbooks" className="section section-playbooks">
-      <h2 className="section-title"><span className="gradient-text">Implementation</span> Playbooks</h2>
-      <p className="section-subtitle">Step-by-step guides with working code to build AI agents that produce perfect, error-free outputs.</p>
-
-      <div className="playbook-categories" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
-        {[
-          { key: 'coding', icon: '💻', title: 'Coding Agent' },
-          { key: 'research', icon: '🔍', title: 'Research Agent' },
-          { key: 'data', icon: '📊', title: 'Data Pipeline' },
-          { key: 'content', icon: '✍️', title: 'Content Agent' },
-          { key: 'support', icon: '🎧', title: 'Support Agent' }
-        ].map(cat => (
-          <button 
-            key={cat.key}
-            className={`playbook-category-btn ${activeCategory === cat.key ? 'active' : ''}`}
-            onClick={() => setActiveCategory(cat.key)}
-            style={{
-              background: activeCategory === cat.key ? 'var(--color-primary)' : 'rgba(26, 31, 53, 0.4)',
-              border: activeCategory === cat.key ? '1px solid var(--color-primary)' : '1px solid var(--glass-border)',
-              color: '#fff', padding: '0.6rem 1.2rem', borderRadius: '20px', cursor: 'pointer',
-              fontWeight: '600', transition: 'all 0.3s ease'
-            }}
-          >
-            {cat.icon} {cat.title}
-          </button>
-        ))}
-      </div>
-
-      <div id="playbook-content">
-        {!currentPlaybook ? (
-          <div className="glass-card fade-in" style={{ padding: '3rem', textAlign: 'center' }}>
-            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }}>🏗️</span>
-            <h4>Playbook Coming Soon!</h4>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>We are compiling code structures and error guardrails for this agent framework.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {/* Header info */}
-            <div className="playbook-header glass-card fade-in" style={{ borderLeft: '4px solid var(--color-primary)' }}>
-              <h3 style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: '1.5rem', marginBottom: '0.5rem' }}>{currentPlaybook.title}</h3>
-              <p style={{ color: 'var(--text-secondary)' }}>{currentPlaybook.description}</p>
-            </div>
-
-            {/* Steps */}
-            {currentPlaybook.steps.map((step, idx) => {
-              const selectedLang = getStepLanguage(idx, step);
-              const codeString = step.code?.[selectedLang] || '';
-              
-              return (
-                <div key={idx} className="playbook-step glass-card fade-in" style={{ position: 'relative' }}>
-                  <div className="step-badge" style={{
-                    position: 'absolute', top: '1.25rem', right: '1.25rem',
-                    background: 'rgba(139, 92, 246, 0.15)', color: 'var(--color-primary-light)',
-                    fontSize: '0.75rem', fontWeight: 'bold', padding: '0.2rem 0.6rem', borderRadius: '20px'
-                  }}>
-                    Step {idx + 1}
-                  </div>
-                  
-                  <h4 style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: '1.2rem', marginBottom: '0.5rem', paddingRight: '4rem' }}>{step.title}</h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1.25rem' }}>{step.description}</p>
-                  
-                  {step.code && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                      <div className="code-tabs" style={{ display: 'flex', gap: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.25rem' }}>
-                        {step.code.python && (
-                          <button 
-                            className={`code-tab ${selectedLang === 'python' ? 'active' : ''}`}
-                            onClick={() => setStepLanguage(idx, 'python')}
-                            style={{
-                              background: 'none', border: 'none', color: selectedLang === 'python' ? 'var(--color-primary-light)' : 'var(--text-dim)',
-                              fontWeight: '600', padding: '0.4rem 0.8rem', cursor: 'pointer', borderBottom: selectedLang === 'python' ? '2px solid var(--color-primary)' : 'none',
-                              fontSize: '0.85rem'
-                            }}
-                          >
-                            Python
-                          </button>
-                        )}
-                        {step.code.javascript && (
-                          <button 
-                            className={`code-tab ${selectedLang === 'javascript' ? 'active' : ''}`}
-                            onClick={() => setStepLanguage(idx, 'javascript')}
-                            style={{
-                              background: 'none', border: 'none', color: selectedLang === 'javascript' ? 'var(--color-primary-light)' : 'var(--text-dim)',
-                              fontWeight: '600', padding: '0.4rem 0.8rem', cursor: 'pointer', borderBottom: selectedLang === 'javascript' ? '2px solid var(--color-primary)' : 'none',
-                              fontSize: '0.85rem'
-                            }}
-                          >
-                            JavaScript
-                          </button>
-                        )}
-                      </div>
-                      
-                      <div style={{ position: 'relative' }}>
-                        <pre className="code-block" style={{
-                          background: '#070A13', border: '1px solid var(--glass-border)',
-                          borderRadius: '8px', padding: '1.25rem', overflowX: 'auto',
-                          fontSize: '0.85rem', color: '#fff', fontFamily: 'Fira Code, monospace', lineHeight: '1.6'
-                        }}>
-                          <code>{codeString}</code>
-                        </pre>
-                        <button 
-                          className="copy-btn" 
-                          onClick={() => handleCopyCode(idx, codeString)}
-                          style={{
-                            position: 'absolute', top: '0.75rem', right: '0.75rem',
-                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '6px', color: 'var(--text-secondary)', padding: '0.3rem 0.75rem',
-                            fontSize: '0.75rem', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s'
-                          }}
-                        >
-                          📋 Copy
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Pitfalls and Tips */}
-                  {step.pitfalls && step.pitfalls.length > 0 && (
-                    <div style={{ marginTop: '1rem' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--color-danger)', letterSpacing: '0.05em' }}>⚠️ Common Pitfalls</span>
-                      <ul style={{ listStyle: 'none', paddingLeft: 0, marginTop: '0.3rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                        {step.pitfalls.map((p, i) => <li key={i} style={{ marginBottom: '0.25rem', paddingLeft: '1rem', position: 'relative' }}><span style={{ position: 'absolute', left: 0, color: 'var(--color-danger)' }}>•</span> {p}</li>)}
-                      </ul>
-                    </div>
-                  )}
-
-                  {step.tips && step.tips.length > 0 && (
-                    <div style={{ marginTop: '1rem' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--color-success)', letterSpacing: '0.05em' }}>💡 Integration Tips</span>
-                      <ul style={{ listStyle: 'none', paddingLeft: 0, marginTop: '0.3rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                        {step.tips.map((t, i) => <li key={i} style={{ marginBottom: '0.25rem', paddingLeft: '1rem', position: 'relative' }}><span style={{ position: 'absolute', left: 0, color: 'var(--color-success)' }}>•</span> {t}</li>)}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Error prevention summary */}
-            {currentPlaybook.errorPrevention && (
-              <div className="playbook-card glass-card fade-in" style={{ borderLeft: '4px solid var(--color-danger)' }}>
-                <h4 style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: '1.2rem', marginBottom: '0.5rem' }}>🛡️ Error Prevention Guardrails</h4>
-                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  {currentPlaybook.errorPrevention.map((e, idx) => <li key={idx}>{e}</li>)}
-                </ul>
-              </div>
-            )}
-
-            {/* Best practices summary */}
-            {currentPlaybook.bestPractices && (
-              <div className="playbook-card glass-card fade-in" style={{ borderLeft: '4px solid var(--color-success)' }}>
-                <h4 style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: '1.2rem', marginBottom: '0.5rem' }}>✅ Framework Best Practices</h4>
-                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  {currentPlaybook.bestPractices.map((b, idx) => <li key={idx}>{b}</li>)}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: PROMPT OPTIMIZER
-   ======================================================================== */
-const PromptOptimizer = ({ models, showToast }) => {
-  const [task, setTask] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [complexity, setComplexity] = useState('moderate');
-  const [format, setFormat] = useState('system-prompt');
-  
-  const [output, setOutput] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [liveResponse, setLiveResponse] = useState(null);
-  const [isTestingLive, setIsTestingLive] = useState(false);
-
-  // Set default model once loaded
-  useEffect(() => {
-    if (models.length > 0 && !selectedModel) {
-      setSelectedModel(models[0].id);
-    }
-  }, [models]);
-
-  const handleGenerate = async () => {
-    if (!task.trim()) {
-      showToast('Please describe your task first.', 'warning');
-      return;
-    }
-
-    setIsGenerating(true);
-    setLiveResponse(null);
-    
-    try {
-      const res = await fetch('/api/optimize-prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          task,
-          model: selectedModel || 'gemini-35-pro',
-          complexity,
-          format
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setOutput(data.output);
-        showToast('Prompt generated successfully!', 'success');
-      } else {
-        throw new Error('API server returned error');
-      }
-    } catch (err) {
-      console.warn("API request failed, generating client-side mock prompt.");
-      // Fallback generator
-      const activeModelObj = models.find(m => m.id === selectedModel) || models[0];
-      let genText = '';
-      if (format === 'system-prompt' || format === 'full') {
-        genText += clientGenerateSystemPrompt(task, activeModelObj, complexity);
-      }
-      if (format === 'config' || format === 'full') {
-        if (genText) genText += '\n\n' + '═'.repeat(60) + '\n\n';
-        genText += clientGenerateConfig(task, activeModelObj, complexity);
-      }
-      setOutput(genText);
-      showToast('Prompt generated successfully (local engine)!', 'success');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const clientGenerateSystemPrompt = (taskText, modelObj, comp) => {
-    const depth = comp === 'simple' ? 'concise' : comp === 'complex' ? 'highly detailed and exhaustive' : 'thorough';
-    return `# System Prompt — ${modelObj.name} (${modelObj.provider})
-
-## Role
-You are an expert AI assistant specialized in: ${taskText}.
-You leverage the capabilities of ${modelObj.name}, which excels at ${(modelObj.bestFor || []).join(', ')}.
-
-## Core Instructions
-1. Provide ${depth} responses tailored to the user's request.
-2. Always structure output clearly with headings, bullet points, or numbered steps.
-3. When generating code, include comments explaining each significant block.
-4. If the request is ambiguous, ask a clarifying question before proceeding.
-5. Prioritize accuracy over speed; verify facts and logic carefully.
-
-## Output Format
-- Use Markdown formatting for readability.
-- For code: use fenced code blocks with the correct language identifier.
-- For data: use tables or JSON as appropriate.
-- Conclude each response with a brief "Next Steps" section when applicable.
-
-## Constraints & Safety
-- Never fabricate sources or data. Clearly state when you are uncertain.
-- Respect rate limits: keep responses within ${modelObj.contextWindow} context window.
-- Do not produce harmful, biased, or misleading content.
-- Follow the principle of least surprise — be predictable and consistent.
-
-## Error Handling
-- If the input is malformed or missing required fields, respond with a structured error:
-  { "error": "<type>", "message": "<human-readable description>", "suggestion": "<fix>" }
-- For multi-step tasks, checkpoint progress and report partial results on failure.
-
-## Validation Rules
-- All generated code must be syntactically valid.
-- JSON output must conform to the schema provided by the user.
-- Numerical results should include units and precision context.
-
-## Model-Specific Optimizations (${modelObj.name})
-- Strengths to leverage: ${(modelObj.strengths || []).join('; ')}.
-- Known limitations to mitigate: ${(modelObj.weaknesses || []).join('; ')}.
-- Recommended temperature: ${comp === 'simple' ? '0.3' : comp === 'complex' ? '0.7' : '0.5'} for this task type.
-
-## Task Context
-"${taskText}"`;
-  };
-
-  const clientGenerateConfig = (taskText, modelObj, comp) => {
-    const temp = comp === 'simple' ? 0.3 : comp === 'complex' ? 0.7 : 0.5;
-    const maxTokens = comp === 'simple' ? 1024 : comp === 'complex' ? 8192 : 4096;
-    const configObj = {
-      model: { id: modelObj.id, provider: modelObj.provider, name: modelObj.name },
-      parameters: { temperature: temp, max_tokens: maxTokens, top_p: 0.95, frequency_penalty: 0.1, presence_penalty: 0.05 },
-      context: { system_prompt_file: './prompts/system.md', task_description: taskText },
-      tools: { enabled: comp !== 'simple', definitions_path: './tools/', max_tool_calls: comp === 'complex' ? 10 : 5 },
-      retry: { max_retries: 3, backoff_base_ms: 500, backoff_multiplier: 2 },
-      safety: { content_filter: true, max_context_usage: 0.85 },
-      logging: { level: 'info', output: './logs/run.jsonl' }
-    };
-    return `// Configuration Template for ${modelObj.name}\n` + JSON.stringify(configObj, null, 2);
-  };
-
-  const handleCopy = () => {
-    if (output) {
-      navigator.clipboard.writeText(output).then(() => {
-        showToast('Copied to clipboard!', 'success');
-      });
-    }
-  };
-
-  return (
-    <section id="section-prompt-builder" className="section section-prompt-builder">
-      <h2 className="section-title"><span className="gradient-text">Prompt</span> Optimizer</h2>
-      <p className="section-subtitle">Generate optimized system prompts and configuration templates tailored to your specific model and task.</p>
-
-      <div className="pb-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-        <div className="pb-field pb-field-full" style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="pb-label" htmlFor="pb-task" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Describe Your Task</label>
-          <textarea 
-            id="pb-task" 
-            className="pb-textarea" 
-            placeholder="e.g., Build an agent that reviews pull requests and suggests improvements..."
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
-            style={{
-              width: '100%', minHeight: '120px', background: 'var(--bg-surface)',
-              border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1rem',
-              color: '#fff', fontSize: '0.95rem', outline: 'none', fontFamily: 'inherit', resize: 'vertical'
-            }}
-          />
-        </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="pb-label" htmlFor="pb-model" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Target Model</label>
-          <select 
-            id="pb-model" 
-            className="pb-select"
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            style={{
-              background: 'var(--bg-surface)', border: '1px solid var(--glass-border)',
-              borderRadius: '12px', padding: '0.8rem 1rem', color: '#fff', fontSize: '0.9rem',
-              outline: 'none', cursor: 'pointer'
-            }}
-          >
-            {models.map(m => (
-              <option key={m.id} value={m.id} style={{ background: '#111625' }}>
-                {m.icon} {m.name} ({m.provider})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="pb-label" htmlFor="pb-complexity" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Complexity</label>
-          <select 
-            id="pb-complexity" 
-            className="pb-select"
-            value={complexity}
-            onChange={(e) => setComplexity(e.target.value)}
-            style={{
-              background: 'var(--bg-surface)', border: '1px solid var(--glass-border)',
-              borderRadius: '12px', padding: '0.8rem 1rem', color: '#fff', fontSize: '0.9rem',
-              outline: 'none', cursor: 'pointer'
-            }}
-          >
-            <option value="simple" style={{ background: '#111625' }}>Simple (Linear)</option>
-            <option value="moderate" style={{ background: '#111625' }}>Moderate (Chained)</option>
-            <option value="complex" style={{ background: '#111625' }}>Complex (Agent Loop)</option>
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="pb-label" htmlFor="pb-format" style={{ fontWeight: '600', fontSize: '0.9rem' }}>Output Format</label>
-          <select 
-            id="pb-format" 
-            className="pb-select"
-            value={format}
-            onChange={(e) => setFormat(e.target.value)}
-            style={{
-              background: 'var(--bg-surface)', border: '1px solid var(--glass-border)',
-              borderRadius: '12px', padding: '0.8rem 1rem', color: '#fff', fontSize: '0.9rem',
-              outline: 'none', cursor: 'pointer'
-            }}
-          >
-            <option value="system-prompt" style={{ background: '#111625' }}>System Prompt</option>
-            <option value="config" style={{ background: '#111625' }}>Configuration File</option>
-            <option value="full" style={{ background: '#111625' }}>Full Package (Prompt + Config)</option>
-          </select>
-        </div>
-      </div>
-
-      <button 
-        id="pb-generate" 
-        className="btn btn-primary btn-lg" 
-        onClick={handleGenerate}
-        disabled={isGenerating}
-      >
-        {isGenerating ? '⚡ Generating...' : '⚡ Generate Optimized Prompt'}
-      </button>
-
-      {output && (
-        <div id="pb-output-container" className="pb-output-container active" style={{ marginTop: '2rem' }}>
-          <div className="pb-output-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Outfit', margin: 0 }}>Generated Structure</h3>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-secondary btn-sm" onClick={handleCopy}>📋 Copy to Clipboard</button>
-              <button 
-                className="btn btn-primary btn-sm" 
-                onClick={async () => {
-                  setIsTestingLive(true);
-                  let apiKey = '';
-                  try {
-                    const saved = localStorage.getItem('ai_advisor_settings');
-                    if (saved) {
-                      const parsed = JSON.parse(saved);
-                      const mId = selectedModel.toLowerCase();
-                      if (mId.includes('gemini')) apiKey = parsed.geminiKey || '';
-                      else if (mId.includes('claude')) apiKey = parsed.anthropicKey || '';
-                      else if (mId.includes('gpt') || mId.includes('o3')) apiKey = parsed.openaiKey || '';
-                    }
-                  } catch (e) {}
-
-                  try {
-                    const r = await fetch('/api/generate-response', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        model: selectedModel,
-                        prompt: task,
-                        system_prompt: output,
-                        api_key: apiKey || undefined
-                      })
-                    });
-                    if (r.ok) {
-                      const data = await r.json();
-                      setLiveResponse(data);
-                      showToast(`Real response generated via ${data.provider}!`, 'success');
-                    }
-                  } catch (e) {
-                    showToast('Failed to run model test.', 'error');
-                  } finally {
-                    setIsTestingLive(false);
-                  }
-                }}
-                disabled={isTestingLive}
-              >
-                {isTestingLive ? '⚡ Running Test...' : '⚡ Test Real Model Response'}
-              </button>
-            </div>
-          </div>
-          <pre id="pb-output" style={{ background: '#070A13', border: '1px solid var(--glass-border)', padding: '1.25rem', borderRadius: '8px', overflowX: 'auto' }}>
-            <code>{output}</code>
-          </pre>
-
-          {liveResponse && (
-            <div className="glass-card fade-in" style={{ padding: '1.5rem', borderRadius: '12px', marginTop: '1.5rem', borderLeft: '4px solid var(--color-primary)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  🤖 Real Model Response Output ({selectedModel})
-                </h4>
-                <span className={`tag ${liveResponse.live_api ? 'tag--pink' : 'tag--violet'}`}>
-                  {liveResponse.live_api ? '🟢 Live API' : '⚡ Model Architecture Signature'}
-                </span>
-              </div>
-              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', fontSize: '0.85rem', color: '#e2e8f0', background: 'rgba(10, 14, 26, 0.8)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--glass-border)', maxHeight: '400px', overflowY: 'auto' }}>
-                {liveResponse.output}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
-    </section>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: SITE FOOTER
-   ======================================================================== */
-const Footer = () => {
-  return (
-    <footer className="site-footer" style={{ borderTop: '1px solid var(--glass-border)', padding: '3rem 2rem', marginTop: '6rem' }}>
-      <div className="footer-content" style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-        <p className="footer-text" style={{ fontSize: '1rem', fontWeight: '600' }}>
-          Built with ⚡ by <span className="gradient-text">AI Advisor</span> — Making AI selection effortless
-        </p>
-        <p className="footer-sub" style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '0.5rem' }}>
-          Data updated July 2026 • Not affiliated with any AI provider
-        </p>
-      </div>
-    </footer>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: TOAST CONTAINER
-   ======================================================================== */
-const ToastContainer = ({ toasts }) => {
-  const getIcon = (type) => {
-    const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
-    return icons[type] || icons.info;
-  };
-
-  return (
-    <div className="toast-container">
-      {toasts.map(t => (
-        <div key={t.id} className={`toast toast--${t.type}`}>
-          <span>{getIcon(t.type)}</span>
-          <span>{t.message}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: SIGN UP MODAL (GOOGLE ORIENTED)
-   ======================================================================== */
-
-/* ========================================================================
-   SUB-COMPONENT: SIGN UP MODAL (GOOGLE ORIENTED)
-   ======================================================================== */
-const SignUpModal = ({ isOpen, onClose, onSuccess, showToast, userAccount, setUserAccount }) => {
-  const [isAuthorizing, setIsAuthorizing] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  if (!isOpen) return null;
-
-  const handleGoogleConnect = (name = "Alex Carter", userEmail = "alex.carter@gmail.com") => {
-    setIsAuthorizing(true);
-    setTimeout(() => {
-      const account = {
-        name,
-        email: userEmail,
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-        provider: "google",
-        connectedAt: new Date().toLocaleDateString()
-      };
-      setUserAccount(account);
-      try {
-        localStorage.setItem('ai_advisor_user', JSON.stringify(account));
-      } catch (e) {}
-      setIsAuthorizing(false);
-      showToast(`⚡ Google Account Connected! Welcome, ${account.name}`, "success");
-      onClose();
-      onSuccess();
-    }, 600);
-  };
-
-  const handleEmailSubmit = (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      showToast("Please enter email and password.", "error");
-      return;
-    }
-    const name = email.split('@')[0];
-    const account = {
-      name,
-      email,
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      provider: "email",
-      connectedAt: new Date().toLocaleDateString()
-    };
-    setUserAccount(account);
-    try {
-      localStorage.setItem('ai_advisor_user', JSON.stringify(account));
-    } catch (e) {}
-    showToast(`⚡ Account created for ${name}!`, "success");
-    onClose();
-    onSuccess();
-  };
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', padding: '2.25rem', textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <GoogleIcon />
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-primary-light)' }}>Google SSO Auth</span>
-          </div>
-          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
-        </div>
-
-        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.5rem' }} className="gradient-text">
-          Connect Your Account
-        </h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.75rem', lineHeight: 1.4 }}>
-          Sign in with Google to access AI model recommendations, code playbooks, and real execution loops.
-        </p>
-
-        {/* PROMINENT GOOGLE BUTTON */}
-        <button 
-          onClick={() => handleGoogleConnect()}
-          disabled={isAuthorizing}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.75rem',
-            background: '#ffffff',
-            color: '#1f2937',
-            border: '1px solid #dadce0',
-            borderRadius: '30px',
-            padding: '0.85rem 1.25rem',
-            fontSize: '1rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-          }}
-        >
-          <GoogleIcon />
-          <span>{isAuthorizing ? 'Authorizing with Google...' : 'Continue with Google'}</span>
-        </button>
-
-        {/* OR DIVIDER */}
-        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: 'var(--text-dim)', fontSize: '0.8rem' }}>
-          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
-          <span style={{ padding: '0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OR WORK EMAIL</span>
-          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
-        </div>
-
-        {/* FALLBACK EMAIL FORM */}
-        <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: 'var(--text-secondary)' }}>Work Email</label>
-            <input 
-              type="email" 
-              className="form-control" 
-              placeholder="alex@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: 'var(--text-secondary)' }}>Password</label>
-            <input 
-              type="password" 
-              className="form-control" 
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
-            />
-          </div>
-          <button type="submit" className="btn btn-secondary" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', marginTop: '0.25rem', fontWeight: 600 }}>
-            Sign In with Email
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: REQUEST A DEMO MODAL
-   ======================================================================== */
-const RequestDemoModal = ({ isOpen, onClose, showToast }) => {
-  const [formData, setFormData] = React.useState({
-    name: '',
-    email: '',
-    company: '',
-    useCase: ''
-  });
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.company) {
-      showToast("Please fill in all required fields.", "error");
-      return;
-    }
-    showToast(`⚡ Thank you, ${formData.name}! Your demo request has been received. Our team will contact you shortly.`, "success");
-    onClose();
-  };
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px', padding: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }} className="gradient-text">Request a Demo</h2>
-          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', padding: '0.25rem 0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
-        </div>
-        
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-          Get a personalized walk-through of AI Advisor with one of our enterprise AI specialists.
-        </p>
-
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Full Name</label>
-            <input 
-              type="text" 
-              className="form-control" 
-              placeholder="Alex Carter"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Work Email</label>
-            <input 
-              type="email" 
-              className="form-control" 
-              placeholder="alex@company.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Company Name</label>
-            <input 
-              type="text" 
-              className="form-control" 
-              placeholder="Acme Corp"
-              value={formData.company}
-              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Describe Your Use Case (Optional)</label>
-            <textarea 
-              className="form-control" 
-              placeholder="We are building customer support agents..."
-              value={formData.useCase}
-              onChange={(e) => setFormData({ ...formData, useCase: e.target.value })}
-              rows="3"
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '0.6rem', borderRadius: '6px', width: '100%', resize: 'vertical', fontFamily: 'inherit' }}
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '0.5rem', padding: '0.8rem' }}>
-            Submit Request
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: SETTINGS & API KEY MANAGER
-   ======================================================================== */
-const SettingsPanel = ({ showToast }) => {
-  const [geminiKey, setGeminiKey] = useState('');
-  const [anthropicKey, setAnthropicKey] = useState('');
-  const [openaiKey, setOpenaiKey] = useState('');
-  const [temperature, setTemperature] = useState(0.2);
-  const [maxTokens, setMaxTokens] = useState(4096);
-  const [showKeys, setShowKeys] = useState(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('ai_advisor_settings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.geminiKey) setGeminiKey(parsed.geminiKey);
-        if (parsed.anthropicKey) setAnthropicKey(parsed.anthropicKey);
-        if (parsed.openaiKey) setOpenaiKey(parsed.openaiKey);
-        if (parsed.temperature !== undefined) setTemperature(parsed.temperature);
-        if (parsed.maxTokens !== undefined) setMaxTokens(parsed.maxTokens);
-      }
-    } catch (e) {
-      console.warn("Could not load settings from localStorage:", e);
-    }
-  }, []);
-
-  const handleSave = (e) => {
-    e.preventDefault();
-    const config = {
-      geminiKey,
-      anthropicKey,
-      openaiKey,
-      temperature,
-      maxTokens
-    };
-    try {
-      localStorage.setItem('ai_advisor_settings', JSON.stringify(config));
-      showToast('⚡ Settings and API Keys saved successfully!', 'success');
-    } catch (e) {
-      showToast('Failed to save settings to localStorage.', 'error');
-    }
-  };
-
-  const handleClear = () => {
-    try {
-      localStorage.removeItem('ai_advisor_settings');
-      setGeminiKey('');
-      setAnthropicKey('');
-      setOpenaiKey('');
-      setTemperature(0.2);
-      setMaxTokens(4096);
-      showToast('Settings cleared.', 'info');
-    } catch (e) {
-      showToast('Failed to clear settings.', 'error');
-    }
-  };
-
-  return (
-    <section className="section section-settings">
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 className="section-title" style={{ textAlign: 'left', marginBottom: '0.5rem' }}>
-            <span className="gradient-text">Workspace Settings</span> & API Keys
-          </h2>
-          <p className="section-subtitle" style={{ textAlign: 'left', margin: 0 }}>
-            Configure your provider API keys and default inference parameters. Keys are stored locally in your browser.
-          </p>
-        </div>
-
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {/* API Keys Card */}
-          <div className="glass-card" style={{ padding: '2rem', borderRadius: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                🔑 Provider API Credentials
-              </h3>
-              <button 
-                type="button" 
-                className="btn-ghost" 
-                onClick={() => setShowKeys(!showKeys)}
-                style={{ fontSize: '0.85rem', color: 'var(--color-primary-light)', background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                {showKeys ? '🙈 Hide Keys' : '👁️ Show Keys'}
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                  Google Gemini API Key
-                </label>
-                <input 
-                  type={showKeys ? "text" : "password"} 
-                  className="form-control" 
-                  placeholder="AIzaSy..."
-                  value={geminiKey}
-                  onChange={(e) => setGeminiKey(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                  Anthropic Claude API Key
-                </label>
-                <input 
-                  type={showKeys ? "text" : "password"} 
-                  className="form-control" 
-                  placeholder="sk-ant-api03-..."
-                  value={anthropicKey}
-                  onChange={(e) => setAnthropicKey(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                  OpenAI API Key
-                </label>
-                <input 
-                  type={showKeys ? "text" : "password"} 
-                  className="form-control" 
-                  placeholder="sk-proj-..."
-                  value={openaiKey}
-                  onChange={(e) => setOpenaiKey(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Model Parameters Card */}
-          <div className="glass-card" style={{ padding: '2rem', borderRadius: '16px' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🎛️ Default Model Parameters
-            </h3>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    Temperature
-                  </label>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-primary-light)' }}>
-                    {temperature}
-                  </span>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="1" 
-                  step="0.05" 
-                  value={temperature}
-                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  style={{ width: '100%', accentColor: 'var(--color-primary)' }}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.25rem' }}>
-                  <span>0.0 (Precise / Deterministic)</span>
-                  <span>1.0 (Creative)</span>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                  Max Output Tokens
-                </label>
-                <input 
-                  type="number" 
-                  className="form-control" 
-                  value={maxTokens}
-                  onChange={(e) => setMaxTokens(parseInt(e.target.value) || 1024)}
-                  min="256"
-                  max="128000"
-                  step="256"
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            <button 
-              type="button" 
-              className="btn btn-secondary" 
-              onClick={handleClear}
-              style={{ borderRadius: '8px', padding: '0.75rem 1.5rem' }}
-            >
-              Clear Storage
-            </button>
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              style={{ borderRadius: '8px', padding: '0.75rem 2rem' }}
-            >
-              Save Configuration
-            </button>
-          </div>
-        </form>
-      </div>
-    </section>
-  );
-};
-
-/* ========================================================================
-   SUB-COMPONENT: MODEL TEST RESPONSE MODAL
-   ======================================================================== */
-const ModelTestModal = ({ model, onClose, showToast }) => {
-  const [promptText, setPromptText] = useState(`Write a production-ready python script demonstrating ${model.name}'s core strengths.`);
-  const [systemPrompt, setSystemPrompt] = useState('');
-  const [response, setResponse] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleGenerate = async () => {
-    if (!promptText.trim()) {
-      showToast('Please enter a test prompt.', 'warning');
-      return;
-    }
-
-    setIsLoading(true);
-    setResponse(null);
-
-    let apiKey = '';
-    try {
-      const saved = localStorage.getItem('ai_advisor_settings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const mId = model.id.toLowerCase();
-        if (mId.includes('gemini')) apiKey = parsed.geminiKey || '';
-        else if (mId.includes('claude')) apiKey = parsed.anthropicKey || '';
-        else if (mId.includes('gpt') || mId.includes('o3')) apiKey = parsed.openaiKey || '';
-      }
-    } catch (e) {}
-
-    try {
-      const res = await fetch('/api/generate-response', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: model.id,
-          prompt: promptText,
-          system_prompt: systemPrompt || undefined,
-          api_key: apiKey || undefined
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setResponse(data);
-        showToast(`Response generated via ${data.provider}!`, 'success');
-      } else {
-        throw new Error('API server returned error');
-      }
-    } catch (err) {
-      showToast('Error connecting to backend model engine.', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const samplePrompts = [
-    `Write a production-ready python script demonstrating ${model.name}'s core strengths.`,
-    `Refactor a multi-step agentic loop to handle rate limits and tool errors.`,
-    `Explain the architectural difference between ${model.name} and competing models.`
-  ];
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '750px', width: '90%', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.75rem' }}>{model.icon}</span>
-            <div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Test Model Response — {model.name}</h3>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Provider: {model.provider} | Context: {model.contextWindow}</span>
-            </div>
-          </div>
-          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>Sample Prompts</label>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {samplePrompts.map((sp, i) => (
-                <button 
-                  key={i} 
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => setPromptText(sp)}
-                  style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', border: '1px solid var(--glass-border)', borderRadius: '6px', color: 'var(--color-primary-light)', cursor: 'pointer', textAlign: 'left' }}
-                >
-                  Prompt {i + 1}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>Test Prompt</label>
-            <textarea 
-              className="form-control" 
-              rows="3" 
-              value={promptText}
-              onChange={(e) => setPromptText(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff', resize: 'vertical', fontFamily: 'inherit' }}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>System Instructions (Optional)</label>
-            <input 
-              type="text" 
-              className="form-control" 
-              placeholder="e.g. You are a senior AI systems architect..."
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-              style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
-            />
-          </div>
-
-          <button 
-            type="button" 
-            className="btn btn-primary" 
-            onClick={handleGenerate}
-            disabled={isLoading}
-            style={{ padding: '0.8rem', borderRadius: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-          >
-            {isLoading ? '⚡ Executing Inference Engine...' : `⚡ Generate Real Response (${model.name})`}
-          </button>
-
-          {response && (
-            <div className="glass-card fade-in" style={{ padding: '1.25rem', borderRadius: '12px', marginTop: '1rem', borderLeft: '4px solid var(--color-primary)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <span className={`tag ${response.live_api ? 'tag--pink' : 'tag--violet'}`} style={{ fontWeight: 700 }}>
-                  {response.live_api ? '🟢 Live Provider API' : '⚡ Model Architecture Signature'}
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{response.provider}</span>
-              </div>
-              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', fontSize: '0.85rem', color: '#e2e8f0', background: 'rgba(10, 14, 26, 0.6)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--glass-border)', maxHeight: '350px', overflowY: 'auto' }}>
-                {response.output}
-              </pre>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default App;
