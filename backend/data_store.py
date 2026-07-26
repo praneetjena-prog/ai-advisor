@@ -212,6 +212,48 @@ models = [
         "icon": "👁️"
     },
     {
+        "id": "o3",
+        "name": "OpenAI o3",
+        "provider": "OpenAI",
+        "description": "OpenAI's premier reasoning flagship model. Designed for advanced science, mathematics, coding algorithms, and deep step-by-step logic.",
+        "contextWindow": "200K tokens",
+        "pricing": "$15.00 / $60.00 per 1M tokens",
+        "speed": "slow",
+        "bestFor": ["Deep reasoning", "Complex mathematics", "Algorithmic coding", "Scientific research"],
+        "strengths": ["Frontier reasoning benchmark scores", "Native chain-of-thought planning", "High precision"],
+        "weaknesses": ["Higher latency due to thinking tokens", "Premium pricing tier"],
+        "tier": "high",
+        "icon": "🧠"
+    },
+    {
+        "id": "o3-mini",
+        "name": "OpenAI o3-mini",
+        "provider": "OpenAI",
+        "description": "OpenAI's high-speed reasoning model. Delivers exceptional STEM and coding performance at a fraction of the latency and cost.",
+        "contextWindow": "200K tokens",
+        "pricing": "$1.10 / $4.40 per 1M tokens",
+        "speed": "fast",
+        "bestFor": ["Fast reasoning", "STEM problem solving", "Competitive programming", "Agentic tool loops"],
+        "strengths": ["Ultra-fast reasoning speeds", "Configurable reasoning effort (low/med/high)", "Cost-efficient"],
+        "weaknesses": ["Lacks native multimodal image inputs"],
+        "tier": "medium",
+        "icon": "⚡"
+    },
+    {
+        "id": "gpt-4o-mini",
+        "name": "GPT-4o Mini",
+        "provider": "OpenAI",
+        "description": "OpenAI's lightweight multimodal workhorse. Built for fast, affordable text and vision processing at scale.",
+        "contextWindow": "128K tokens",
+        "pricing": "$0.15 / $0.60 per 1M tokens",
+        "speed": "fast",
+        "bestFor": ["High-volume chat", "Vision parsing", "Simple automation", "Sub-second API loops"],
+        "strengths": ["Extremely low cost", "Vision multimodal capability", "Sub-second latencies"],
+        "weaknesses": ["Lower reasoning depth on complex code logic"],
+        "tier": "low",
+        "icon": "🚀"
+    },
+    {
         "id": "llama-4-maverick",
         "name": "Llama 4 Maverick",
         "provider": "Meta",

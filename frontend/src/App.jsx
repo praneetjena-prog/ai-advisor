@@ -217,6 +217,48 @@ const FALLBACK_DATA = {
       "icon": "👁️"
     },
     {
+      "id": "o3",
+      "name": "OpenAI o3",
+      "provider": "OpenAI",
+      "description": "OpenAI's premier reasoning flagship model. Designed for advanced science, mathematics, coding algorithms, and deep step-by-step logic.",
+      "contextWindow": "200K tokens",
+      "pricing": "$15.00 / $60.00 per 1M tokens",
+      "speed": "slow",
+      "bestFor": ["Deep reasoning", "Complex mathematics", "Algorithmic coding", "Scientific research"],
+      "strengths": ["Frontier reasoning benchmark scores", "Native chain-of-thought planning", "High precision"],
+      "weaknesses": ["Higher latency due to thinking tokens", "Premium pricing tier"],
+      "tier": "high",
+      "icon": "🧠"
+    },
+    {
+      "id": "o3-mini",
+      "name": "OpenAI o3-mini",
+      "provider": "OpenAI",
+      "description": "OpenAI's high-speed reasoning model. Delivers exceptional STEM and coding performance at a fraction of the latency and cost.",
+      "contextWindow": "200K tokens",
+      "pricing": "$1.10 / $4.40 per 1M tokens",
+      "speed": "fast",
+      "bestFor": ["Fast reasoning", "STEM problem solving", "Competitive programming", "Agentic tool loops"],
+      "strengths": ["Ultra-fast reasoning speeds", "Configurable reasoning effort (low/med/high)", "Cost-efficient"],
+      "weaknesses": ["Lacks native multimodal image inputs"],
+      "tier": "medium",
+      "icon": "⚡"
+    },
+    {
+      "id": "gpt-4o-mini",
+      "name": "GPT-4o Mini",
+      "provider": "OpenAI",
+      "description": "OpenAI's lightweight multimodal workhorse. Built for fast, affordable text and vision processing at scale.",
+      "contextWindow": "128K tokens",
+      "pricing": "$0.15 / $0.60 per 1M tokens",
+      "speed": "fast",
+      "bestFor": ["High-volume chat", "Vision parsing", "Simple automation", "Sub-second API loops"],
+      "strengths": ["Extremely low cost", "Vision multimodal capability", "Sub-second latencies"],
+      "weaknesses": ["Lower reasoning depth on complex code logic"],
+      "tier": "low",
+      "icon": "🚀"
+    },
+    {
       "id": "llama-4-maverick",
       "name": "Llama 4 Maverick",
       "provider": "Meta",
@@ -1261,6 +1303,7 @@ const AdvisorWizard = ({ models, agents, showToast }) => {
 const ModelDatabase = ({ models, agents, compareSet, setCompareSet, isModalActive, setIsModalActive, showToast }) => {
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
+  const [testingModel, setTestingModel] = useState(null);
 
   const dbItems = useMemo(() => {
     const list = [
@@ -1410,17 +1453,29 @@ const ModelDatabase = ({ models, agents, compareSet, setCompareSet, isModalActiv
                 )}
               </div>
 
-              <div className="model-card-footer" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '1rem', paddingTop: '0.75rem' }}>
-                <input 
-                  type="checkbox" 
-                  id={`compare-${item._type}-${item.id}`}
-                  className="compare-checkbox" 
-                  checked={isChecked}
-                  onChange={(e) => handleCheckboxChange(item._type, item.id, e.target.checked)}
-                />
-                <label htmlFor={`compare-${item._type}-${item.id}`} className="compare-label">
-                  Compare
-                </label>
+              <div className="model-card-footer" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '1rem', paddingTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input 
+                    type="checkbox" 
+                    id={`compare-${item._type}-${item.id}`}
+                    className="compare-checkbox" 
+                    checked={isChecked}
+                    onChange={(e) => handleCheckboxChange(item._type, item.id, e.target.checked)}
+                  />
+                  <label htmlFor={`compare-${item._type}-${item.id}`} className="compare-label">
+                    Compare
+                  </label>
+                </div>
+
+                {isModel && (
+                  <button 
+                    className="btn btn-secondary btn-sm" 
+                    onClick={() => setTestingModel(item)}
+                    style={{ padding: '0.3rem 0.75rem', fontSize: '0.75rem', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  >
+                    ⚡ Test Response
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -1435,6 +1490,11 @@ const ModelDatabase = ({ models, agents, compareSet, setCompareSet, isModalActiv
       >
         Compare <span className="compare-count">{compareSet.size}</span>
       </button>
+
+      {/* MODEL RESPONSE PLAYGROUND MODAL */}
+      {testingModel && (
+        <ModelTestModal model={testingModel} onClose={() => setTestingModel(null)} showToast={showToast} />
+      )}
 
       {/* COMPARISON MODAL */}
       {isModalActive && (
@@ -1697,6 +1757,8 @@ const PromptOptimizer = ({ models, showToast }) => {
   
   const [output, setOutput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [liveResponse, setLiveResponse] = useState(null);
+  const [isTestingLive, setIsTestingLive] = useState(false);
 
   // Set default model once loaded
   useEffect(() => {
@@ -1712,14 +1774,15 @@ const PromptOptimizer = ({ models, showToast }) => {
     }
 
     setIsGenerating(true);
+    setLiveResponse(null);
     
     try {
-      const res = await fetch('http://localhost:8000/api/optimize-prompt', {
+      const res = await fetch('/api/optimize-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           task,
-          model: selectedModel || 'gemini-25-pro',
+          model: selectedModel || 'gemini-35-pro',
           complexity,
           format
         })
@@ -1913,13 +1976,73 @@ You leverage the capabilities of ${modelObj.name}, which excels at ${(modelObj.b
 
       {output && (
         <div id="pb-output-container" className="pb-output-container active" style={{ marginTop: '2rem' }}>
-          <div className="pb-output-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Outfit' }}>Generated Structure</h3>
-            <button className="btn btn-secondary btn-sm" onClick={handleCopy}>📋 Copy to Clipboard</button>
+          <div className="pb-output-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Outfit', margin: 0 }}>Generated Structure</h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-secondary btn-sm" onClick={handleCopy}>📋 Copy to Clipboard</button>
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={async () => {
+                  setIsTestingLive(true);
+                  let apiKey = '';
+                  try {
+                    const saved = localStorage.getItem('ai_advisor_settings');
+                    if (saved) {
+                      const parsed = JSON.parse(saved);
+                      const mId = selectedModel.toLowerCase();
+                      if (mId.includes('gemini')) apiKey = parsed.geminiKey || '';
+                      else if (mId.includes('claude')) apiKey = parsed.anthropicKey || '';
+                      else if (mId.includes('gpt') || mId.includes('o3')) apiKey = parsed.openaiKey || '';
+                    }
+                  } catch (e) {}
+
+                  try {
+                    const r = await fetch('/api/generate-response', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        model: selectedModel,
+                        prompt: task,
+                        system_prompt: output,
+                        api_key: apiKey || undefined
+                      })
+                    });
+                    if (r.ok) {
+                      const data = await r.json();
+                      setLiveResponse(data);
+                      showToast(`Real response generated via ${data.provider}!`, 'success');
+                    }
+                  } catch (e) {
+                    showToast('Failed to run model test.', 'error');
+                  } finally {
+                    setIsTestingLive(false);
+                  }
+                }}
+                disabled={isTestingLive}
+              >
+                {isTestingLive ? '⚡ Running Test...' : '⚡ Test Real Model Response'}
+              </button>
+            </div>
           </div>
           <pre id="pb-output" style={{ background: '#070A13', border: '1px solid var(--glass-border)', padding: '1.25rem', borderRadius: '8px', overflowX: 'auto' }}>
             <code>{output}</code>
           </pre>
+
+          {liveResponse && (
+            <div className="glass-card fade-in" style={{ padding: '1.5rem', borderRadius: '12px', marginTop: '1.5rem', borderLeft: '4px solid var(--color-primary)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  🤖 Real Model Response Output ({selectedModel})
+                </h4>
+                <span className={`tag ${liveResponse.live_api ? 'tag--pink' : 'tag--violet'}`}>
+                  {liveResponse.live_api ? '🟢 Live API' : '⚡ Model Architecture Signature'}
+                </span>
+              </div>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', fontSize: '0.85rem', color: '#e2e8f0', background: 'rgba(10, 14, 26, 0.8)', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--glass-border)', maxHeight: '400px', overflowY: 'auto' }}>
+                {liveResponse.output}
+              </pre>
+            </div>
+          )}
         </div>
       )}
     </section>
@@ -2357,6 +2480,152 @@ const SettingsPanel = ({ showToast }) => {
         </form>
       </div>
     </section>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: MODEL TEST RESPONSE MODAL
+   ======================================================================== */
+const ModelTestModal = ({ model, onClose, showToast }) => {
+  const [promptText, setPromptText] = useState(`Write a production-ready python script demonstrating ${model.name}'s core strengths.`);
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [response, setResponse] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!promptText.trim()) {
+      showToast('Please enter a test prompt.', 'warning');
+      return;
+    }
+
+    setIsLoading(true);
+    setResponse(null);
+
+    let apiKey = '';
+    try {
+      const saved = localStorage.getItem('ai_advisor_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const mId = model.id.toLowerCase();
+        if (mId.includes('gemini')) apiKey = parsed.geminiKey || '';
+        else if (mId.includes('claude')) apiKey = parsed.anthropicKey || '';
+        else if (mId.includes('gpt') || mId.includes('o3')) apiKey = parsed.openaiKey || '';
+      }
+    } catch (e) {}
+
+    try {
+      const res = await fetch('/api/generate-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: model.id,
+          prompt: promptText,
+          system_prompt: systemPrompt || undefined,
+          api_key: apiKey || undefined
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setResponse(data);
+        showToast(`Response generated via ${data.provider}!`, 'success');
+      } else {
+        throw new Error('API server returned error');
+      }
+    } catch (err) {
+      showToast('Error connecting to backend model engine.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const samplePrompts = [
+    `Write a production-ready python script demonstrating ${model.name}'s core strengths.`,
+    `Refactor a multi-step agentic loop to handle rate limits and tool errors.`,
+    `Explain the architectural difference between ${model.name} and competing models.`
+  ];
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '750px', width: '90%', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span style={{ fontSize: '1.75rem' }}>{model.icon}</span>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Test Model Response — {model.name}</h3>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Provider: {model.provider} | Context: {model.contextWindow}</span>
+            </div>
+          </div>
+          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>Sample Prompts</label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {samplePrompts.map((sp, i) => (
+                <button 
+                  key={i} 
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setPromptText(sp)}
+                  style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', border: '1px solid var(--glass-border)', borderRadius: '6px', color: 'var(--color-primary-light)', cursor: 'pointer', textAlign: 'left' }}
+                >
+                  Prompt {i + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>Test Prompt</label>
+            <textarea 
+              className="form-control" 
+              rows="3" 
+              value={promptText}
+              onChange={(e) => setPromptText(e.target.value)}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff', resize: 'vertical', fontFamily: 'inherit' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-secondary)' }}>System Instructions (Optional)</label>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="e.g. You are a senior AI systems architect..."
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
+            />
+          </div>
+
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={handleGenerate}
+            disabled={isLoading}
+            style={{ padding: '0.8rem', borderRadius: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+          >
+            {isLoading ? '⚡ Executing Inference Engine...' : `⚡ Generate Real Response (${model.name})`}
+          </button>
+
+          {response && (
+            <div className="glass-card fade-in" style={{ padding: '1.25rem', borderRadius: '12px', marginTop: '1rem', borderLeft: '4px solid var(--color-primary)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <span className={`tag ${response.live_api ? 'tag--pink' : 'tag--violet'}`} style={{ fontWeight: 700 }}>
+                  {response.live_api ? '🟢 Live Provider API' : '⚡ Model Architecture Signature'}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{response.provider}</span>
+              </div>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', fontSize: '0.85rem', color: '#e2e8f0', background: 'rgba(10, 14, 26, 0.6)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--glass-border)', maxHeight: '350px', overflowY: 'auto' }}>
+                {response.output}
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
