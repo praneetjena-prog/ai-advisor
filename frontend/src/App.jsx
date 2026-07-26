@@ -432,6 +432,15 @@ function App() {
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
 
+  const [userAccount, setUserAccount] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ai_advisor_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   // Fetch datasets from backend on load
   useEffect(() => {
     const fetchData = async () => {
@@ -505,6 +514,9 @@ function App() {
           setActiveTab={setActiveTab} 
           handleRoute={handleRouteToDashboard} 
           onSignUpClick={() => setIsSignUpOpen(true)}
+          userAccount={userAccount}
+          setUserAccount={setUserAccount}
+          showToast={showToast}
         />
         
         <main style={{ marginTop: '70px' }}>
@@ -625,7 +637,9 @@ function App() {
           isOpen={isSignUpOpen} 
           onClose={() => setIsSignUpOpen(false)} 
           onSuccess={() => handleRouteToDashboard('overview')} 
-          showToast={showToast} 
+          showToast={showToast}
+          userAccount={userAccount}
+          setUserAccount={setUserAccount}
         />
         <RequestDemoModal 
           isOpen={isDemoOpen} 
@@ -726,6 +740,14 @@ function App() {
             >
               <span>←</span> Exit to Home
             </button>
+            <GoogleAccountNavWidget 
+              userAccount={userAccount} 
+              setUserAccount={setUserAccount} 
+              onOpenSignUp={() => setIsSignUpOpen(true)} 
+              showToast={showToast} 
+              handleRouteToDashboard={handleRouteToDashboard} 
+              setView={setView} 
+            />
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <span className="status-dot"></span>
               <span>Connected to API Server</span>
@@ -846,7 +868,7 @@ function App() {
 /* ========================================================================
    SUB-COMPONENT: HEADER
    ======================================================================== */
-const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick }) => {
+const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick, userAccount, setUserAccount, showToast }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -884,14 +906,15 @@ const Header = ({ view, setView, setActiveTab, handleRoute, onSignUpClick }) => 
           >
             Launch Workspace
           </button>
-          
-          <button 
-            className="btn btn-primary btn-sm" 
-            onClick={onSignUpClick}
-            style={{ borderRadius: '20px', padding: '0.4rem 1.2rem', fontSize: '0.85rem' }}
-          >
-            Sign Up Free
-          </button>
+
+          <GoogleAccountNavWidget 
+            userAccount={userAccount} 
+            setUserAccount={setUserAccount} 
+            onOpenSignUp={onSignUpClick} 
+            showToast={showToast} 
+            handleRouteToDashboard={handleRoute} 
+            setView={setView} 
+          />
         </div>
       </div>
     </nav>
@@ -2091,93 +2114,390 @@ const ToastContainer = ({ toasts }) => {
 /* ========================================================================
    SUB-COMPONENT: SIGN UP MODAL
    ======================================================================== */
-const SignUpModal = ({ isOpen, onClose, onSuccess, showToast }) => {
-  const [formData, setFormData] = React.useState({
-    name: '',
-    email: '',
-    password: '',
-    provider: 'gemini'
-  });
+/* ========================================================================
+   SUB-COMPONENT: GOOGLE ICON SVG
+   ======================================================================== */
+const GoogleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.259h2.908c1.702-1.567 2.684-3.874 2.684-6.617z"/>
+    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+  </svg>
+);
+
+/* ========================================================================
+   SUB-COMPONENT: GOOGLE ACCOUNT NAV WIDGET (YOUTUBE / GOOGLE STYLE)
+   ======================================================================== */
+const GoogleAccountNavWidget = ({ userAccount, setUserAccount, onOpenSignUp, showToast, handleRouteToDashboard, setView }) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const [showOneTap, setShowOneTap] = useState(() => !userAccount);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleGoogleConnect = (name = "Alex Carter", email = "alex.carter@gmail.com") => {
+    const account = {
+      name,
+      email,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      provider: "google",
+      connectedAt: new Date().toLocaleDateString()
+    };
+    setUserAccount(account);
+    try {
+      localStorage.setItem('ai_advisor_user', JSON.stringify(account));
+    } catch (e) {}
+    setShowOneTap(false);
+    setShowMenu(false);
+    showToast(`⚡ Signed in with Google as ${account.name}`, 'success');
+    if (handleRouteToDashboard) {
+      handleRouteToDashboard('overview');
+    }
+  };
+
+  const handleSignOut = () => {
+    setUserAccount(null);
+    try {
+      localStorage.removeItem('ai_advisor_user');
+    } catch (e) {}
+    setShowMenu(false);
+    setShowOneTap(true);
+    showToast('Signed out of Google account.', 'info');
+  };
+
+  return (
+    <div style={{ position: 'relative' }} ref={menuRef}>
+      {userAccount ? (
+        // SIGNED IN: GOOGLE PROFILE BADGE
+        <button 
+          onClick={() => setShowMenu(!showMenu)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '30px',
+            padding: '0.25rem 0.75rem 0.25rem 0.3rem',
+            color: '#fff',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <div style={{ position: 'relative' }}>
+            <img 
+              src={userAccount.avatar} 
+              alt={userAccount.name} 
+              style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #4285F4' }}
+            />
+            <span style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '8px', height: '8px', background: '#34A853', borderRadius: '50%', border: '1px solid #000' }}></span>
+          </div>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{userAccount.name.split(' ')[0]}</span>
+          <GoogleIcon />
+        </button>
+      ) : (
+        // NOT SIGNED IN: GOOGLE SIGN IN BUTTON
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button 
+            onClick={onOpenSignUp}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: '#ffffff',
+              color: '#1f2937',
+              border: '1px solid #dadce0',
+              borderRadius: '20px',
+              padding: '0.4rem 1rem',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            }}
+          >
+            <GoogleIcon />
+            <span>Sign in with Google</span>
+          </button>
+        </div>
+      )}
+
+      {/* FLOATING ONE-TAP POPOVER (WHEN NOT SIGNED IN) */}
+      {!userAccount && showOneTap && (
+        <div 
+          className="fade-in"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 12px)',
+            right: 0,
+            width: '300px',
+            background: '#ffffff',
+            color: '#202124',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+            padding: '1.25rem',
+            zIndex: 9999,
+            border: '1px solid #e5e7eb'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <GoogleIcon />
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5f6368' }}>Google One-Tap</span>
+            </div>
+            <button onClick={() => setShowOneTap(false)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer', fontSize: '1rem' }}>✕</button>
+          </div>
+
+          <p style={{ fontSize: '0.85rem', color: '#3c4043', margin: '0 0 1rem 0', lineHeight: 1.4 }}>
+            Sign in to <strong>AI Advisor</strong> with your Google Account
+          </p>
+
+          <div 
+            onClick={() => handleGoogleConnect()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.6rem 0.75rem',
+              background: '#f8f9fa',
+              border: '1px solid #dadce0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'background 0.2s ease'
+            }}
+          >
+            <img 
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" 
+              alt="Alex Carter" 
+              style={{ width: '36px', height: '36px', borderRadius: '50%' }}
+            />
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#202124' }}>Alex Carter</div>
+              <div style={{ fontSize: '0.75rem', color: '#5f6368', textOverflow: 'ellipsis', overflow: 'hidden' }}>alex.carter@gmail.com</div>
+            </div>
+          </div>
+
+          <button 
+            onClick={() => handleGoogleConnect()}
+            style={{
+              width: '100%',
+              marginTop: '0.85rem',
+              background: '#1a73e8',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '0.5rem',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Continue as Alex
+          </button>
+        </div>
+      )}
+
+      {/* YOUTUBE / GOOGLE-STYLE ACCOUNT DROPDOWN CARD (WHEN SIGNED IN) */}
+      {userAccount && showMenu && (
+        <div 
+          className="fade-in"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 12px)',
+            right: 0,
+            width: '310px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '16px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+            padding: '1.25rem',
+            zIndex: 9999,
+            backdropFilter: 'blur(20px)'
+          }}
+        >
+          {/* User Info Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', paddingBottom: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
+            <img 
+              src={userAccount.avatar} 
+              alt={userAccount.name} 
+              style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #4285F4' }}
+            />
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{userAccount.name}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden' }}>{userAccount.email}</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.3rem', fontSize: '0.7rem', color: '#34A853', background: 'rgba(52, 168, 83, 0.1)', padding: '0.15rem 0.5rem', borderRadius: '10px' }}>
+                <GoogleIcon /> Google Account Verified
+              </div>
+            </div>
+          </div>
+
+          {/* Account Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+            <button 
+              onClick={() => { setShowMenu(false); if (handleRouteToDashboard) handleRouteToDashboard('overview'); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: '#fff', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem' }}
+            >
+              🚀 Workspace Dashboard
+            </button>
+            <button 
+              onClick={() => handleGoogleConnect("Jordan Smith", "jordan.smith@gmail.com")}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: 'var(--text-secondary)', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem' }}
+            >
+              🔄 Switch Account
+            </button>
+            <button 
+              onClick={handleSignOut}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: 'var(--color-danger)', padding: '0.6rem 0.75rem', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '0.85rem', borderTop: '1px solid var(--glass-border)', marginTop: '0.25rem', paddingTop: '0.75rem' }}
+            >
+              🚪 Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: SIGN UP MODAL (GOOGLE ORIENTED)
+   ======================================================================== */
+const SignUpModal = ({ isOpen, onClose, onSuccess, showToast, userAccount, setUserAccount }) => {
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleGoogleConnect = (name = "Alex Carter", userEmail = "alex.carter@gmail.com") => {
+    setIsAuthorizing(true);
+    setTimeout(() => {
+      const account = {
+        name,
+        email: userEmail,
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        provider: "google",
+        connectedAt: new Date().toLocaleDateString()
+      };
+      setUserAccount(account);
+      try {
+        localStorage.setItem('ai_advisor_user', JSON.stringify(account));
+      } catch (e) {}
+      setIsAuthorizing(false);
+      showToast(`⚡ Google Account Connected! Welcome, ${account.name}`, "success");
+      onClose();
+      onSuccess();
+    }, 600);
+  };
+
+  const handleEmailSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
-      showToast("Please fill in all required fields.", "error");
+    if (!email || !password) {
+      showToast("Please enter email and password.", "error");
       return;
     }
-    showToast(`⚡ Welcome, ${formData.name}! Your free account was created.`, "success");
+    const name = email.split('@')[0];
+    const account = {
+      name,
+      email,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      provider: "email",
+      connectedAt: new Date().toLocaleDateString()
+    };
+    setUserAccount(account);
+    try {
+      localStorage.setItem('ai_advisor_user', JSON.stringify(account));
+    } catch (e) {}
+    showToast(`⚡ Account created for ${name}!`, "success");
     onClose();
     onSuccess();
   };
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px', padding: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }} className="gradient-text">Create Free Account</h2>
-          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', padding: '0.25rem 0.5rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
+      <div className="glass-card modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', padding: '2.25rem', textAlign: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <GoogleIcon />
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-primary-light)' }}>Google SSO Auth</span>
+          </div>
+          <button className="btn-ghost" onClick={onClose} style={{ fontSize: '1.25rem', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>✕</button>
         </div>
-        
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-          Get instant access to recommendations, interactive playbooks, and simulated test loops.
+
+        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.5rem' }} className="gradient-text">
+          Connect Your Account
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.75rem', lineHeight: 1.4 }}>
+          Sign in with Google to access AI model recommendations, code playbooks, and real execution loops.
         </p>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Full Name</label>
-            <input 
-              type="text" 
-              className="form-control" 
-              placeholder="Alex Carter"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
-          </div>
+        {/* PROMINENT GOOGLE BUTTON */}
+        <button 
+          onClick={() => handleGoogleConnect()}
+          disabled={isAuthorizing}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.75rem',
+            background: '#ffffff',
+            color: '#1f2937',
+            border: '1px solid #dadce0',
+            borderRadius: '30px',
+            padding: '0.85rem 1.25rem',
+            fontSize: '1rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+          }}
+        >
+          <GoogleIcon />
+          <span>{isAuthorizing ? 'Authorizing with Google...' : 'Continue with Google'}</span>
+        </button>
 
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Work Email</label>
+        {/* OR DIVIDER */}
+        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: 'var(--text-dim)', fontSize: '0.8rem' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+          <span style={{ padding: '0 0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OR WORK EMAIL</span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+        </div>
+
+        {/* FALLBACK EMAIL FORM */}
+        <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: 'var(--text-secondary)' }}>Work Email</label>
             <input 
               type="email" 
               className="form-control" 
               placeholder="alex@company.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
             />
           </div>
-
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Password</label>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.3rem', color: 'var(--text-secondary)' }}>Password</label>
             <input 
               type="password" 
               className="form-control" 
               placeholder="••••••••"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: '#fff' }}
             />
           </div>
-
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Primary AI Interest</label>
-            <select 
-              className="form-control"
-              value={formData.provider}
-              onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '0.6rem', borderRadius: '6px', width: '100%' }}
-            >
-              <option value="gemini">Google Gemini (Massive Context)</option>
-              <option value="claude">Anthropic Claude (Complex Coding)</option>
-              <option value="openai">OpenAI GPT (Structured Output)</option>
-              <option value="llama">Meta Llama (Self-Hosted)</option>
-            </select>
-          </div>
-
-          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '0.5rem', padding: '0.8rem' }}>
-            Get Started Free
+          <button type="submit" className="btn btn-secondary" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', marginTop: '0.25rem', fontWeight: 600 }}>
+            Sign In with Email
           </button>
         </form>
       </div>
