@@ -647,6 +647,13 @@ function App() {
             <span className="sidebar-link-icon">⚡</span>
             <span>Prompt Builder</span>
           </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <span className="sidebar-link-icon">⚙️</span>
+            <span>API Settings</span>
+          </button>
         </nav>
         
         <div className="sidebar-footer">
@@ -667,6 +674,7 @@ function App() {
             {activeTab === 'playbooks' && 'Implementation Playbooks'}
             {activeTab === 'simulator' && 'Interactive Agent Simulator'}
             {activeTab === 'prompt' && 'Prompt Optimizer'}
+            {activeTab === 'settings' && 'Workspace & API Settings'}
           </h2>
           <div className="topbar-status" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             <button 
@@ -769,6 +777,10 @@ function App() {
 
           {activeTab === 'prompt' && (
             <PromptOptimizer models={models} showToast={showToast} />
+          )}
+
+          {activeTab === 'settings' && (
+            <SettingsPanel showToast={showToast} />
           )}
         </div>
       </main>
@@ -2140,6 +2152,211 @@ const RequestDemoModal = ({ isOpen, onClose, showToast }) => {
         </form>
       </div>
     </div>
+  );
+};
+
+/* ========================================================================
+   SUB-COMPONENT: SETTINGS & API KEY MANAGER
+   ======================================================================== */
+const SettingsPanel = ({ showToast }) => {
+  const [geminiKey, setGeminiKey] = useState('');
+  const [anthropicKey, setAnthropicKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [temperature, setTemperature] = useState(0.2);
+  const [maxTokens, setMaxTokens] = useState(4096);
+  const [showKeys, setShowKeys] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('ai_advisor_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.geminiKey) setGeminiKey(parsed.geminiKey);
+        if (parsed.anthropicKey) setAnthropicKey(parsed.anthropicKey);
+        if (parsed.openaiKey) setOpenaiKey(parsed.openaiKey);
+        if (parsed.temperature !== undefined) setTemperature(parsed.temperature);
+        if (parsed.maxTokens !== undefined) setMaxTokens(parsed.maxTokens);
+      }
+    } catch (e) {
+      console.warn("Could not load settings from localStorage:", e);
+    }
+  }, []);
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    const config = {
+      geminiKey,
+      anthropicKey,
+      openaiKey,
+      temperature,
+      maxTokens
+    };
+    try {
+      localStorage.setItem('ai_advisor_settings', JSON.stringify(config));
+      showToast('⚡ Settings and API Keys saved successfully!', 'success');
+    } catch (e) {
+      showToast('Failed to save settings to localStorage.', 'error');
+    }
+  };
+
+  const handleClear = () => {
+    try {
+      localStorage.removeItem('ai_advisor_settings');
+      setGeminiKey('');
+      setAnthropicKey('');
+      setOpenaiKey('');
+      setTemperature(0.2);
+      setMaxTokens(4096);
+      showToast('Settings cleared.', 'info');
+    } catch (e) {
+      showToast('Failed to clear settings.', 'error');
+    }
+  };
+
+  return (
+    <section className="section section-settings">
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 className="section-title" style={{ textAlign: 'left', marginBottom: '0.5rem' }}>
+            <span className="gradient-text">Workspace Settings</span> & API Keys
+          </h2>
+          <p className="section-subtitle" style={{ textAlign: 'left', margin: 0 }}>
+            Configure your provider API keys and default inference parameters. Keys are stored locally in your browser.
+          </p>
+        </div>
+
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* API Keys Card */}
+          <div className="glass-card" style={{ padding: '2rem', borderRadius: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                🔑 Provider API Credentials
+              </h3>
+              <button 
+                type="button" 
+                className="btn-ghost" 
+                onClick={() => setShowKeys(!showKeys)}
+                style={{ fontSize: '0.85rem', color: 'var(--color-primary-light)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                {showKeys ? '🙈 Hide Keys' : '👁️ Show Keys'}
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  Google Gemini API Key
+                </label>
+                <input 
+                  type={showKeys ? "text" : "password"} 
+                  className="form-control" 
+                  placeholder="AIzaSy..."
+                  value={geminiKey}
+                  onChange={(e) => setGeminiKey(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  Anthropic Claude API Key
+                </label>
+                <input 
+                  type={showKeys ? "text" : "password"} 
+                  className="form-control" 
+                  placeholder="sk-ant-api03-..."
+                  value={anthropicKey}
+                  onChange={(e) => setAnthropicKey(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  OpenAI API Key
+                </label>
+                <input 
+                  type={showKeys ? "text" : "password"} 
+                  className="form-control" 
+                  placeholder="sk-proj-..."
+                  value={openaiKey}
+                  onChange={(e) => setOpenaiKey(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Model Parameters Card */}
+          <div className="glass-card" style={{ padding: '2rem', borderRadius: '16px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🎛️ Default Model Parameters
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Temperature
+                  </label>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-primary-light)' }}>
+                    {temperature}
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="1" 
+                  step="0.05" 
+                  value={temperature}
+                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--color-primary)' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.25rem' }}>
+                  <span>0.0 (Precise / Deterministic)</span>
+                  <span>1.0 (Creative)</span>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                  Max Output Tokens
+                </label>
+                <input 
+                  type="number" 
+                  className="form-control" 
+                  value={maxTokens}
+                  onChange={(e) => setMaxTokens(parseInt(e.target.value) || 1024)}
+                  min="256"
+                  max="128000"
+                  step="256"
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-surface)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={handleClear}
+              style={{ borderRadius: '8px', padding: '0.75rem 1.5rem' }}
+            >
+              Clear Storage
+            </button>
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              style={{ borderRadius: '8px', padding: '0.75rem 2rem' }}
+            >
+              Save Configuration
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 };
 
